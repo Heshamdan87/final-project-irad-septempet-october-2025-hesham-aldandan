@@ -16,7 +16,7 @@ const { validateRequest } = require('../middleware/validation');
 
 const router = express.Router();
 
-// Validation rules
+
 const registerValidation = [
   body('firstName')
     .trim()
@@ -37,8 +37,8 @@ const registerValidation = [
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
   body('role')
     .optional()
-    .isIn(['student', 'teacher'])
-    .withMessage('Role must be either student or teacher')
+    .isIn(['student'])
+    .withMessage('Role must be student')
 ];
 
 const loginValidation = [
@@ -98,14 +98,14 @@ const resetPasswordValidation = [
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
 
-// Public routes
+
 router.post('/register', registerValidation, validateRequest, register);
 router.post('/login', loginValidation, validateRequest, login);
 router.post('/forgot-password', forgotPasswordValidation, validateRequest, forgotPassword);
 router.put('/reset-password/:resetToken', resetPasswordValidation, validateRequest, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
 
-// Protected routes
+
 router.use(protect); // Apply protection to all routes below
 
 router.post('/logout', logout);
@@ -114,3 +114,5 @@ router.put('/profile', updateProfileValidation, validateRequest, updateProfile);
 router.put('/change-password', changePasswordValidation, validateRequest, changePassword);
 
 module.exports = router;
+
+

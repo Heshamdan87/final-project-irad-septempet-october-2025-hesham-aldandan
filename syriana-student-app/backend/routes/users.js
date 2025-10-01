@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const { getStudents, getStudent, updateStudent, deleteStudent, createUser } = require('../controllers/users');
 
-// All routes require authentication and admin role
+
 router.use(protect);
 router.use((req, res, next) => {
   if (req.user.role !== 'admin') {
@@ -25,3 +25,5 @@ router.route('/:id')
   .delete(deleteStudent);
 
 module.exports = router;
+
+

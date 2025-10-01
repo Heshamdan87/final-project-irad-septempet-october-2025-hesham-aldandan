@@ -14,23 +14,23 @@ const {
   exportGrades
 } = require('../controllers/grades');
 
-// All routes require authentication
+
 router.use(protect);
 
-// General routes
+
 router.get('/', getGrades);
 router.get('/export', exportGrades);
 router.post('/bulk', (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Only admins and teachers can create grades'
+      message: 'Only admins can create grades'
     });
   }
   next();
 }, bulkCreateGrades);
 
-// Student-specific routes
+
 router.get('/my-grades', (req, res, next) => {
   if (req.user.role !== 'student') {
     return res.status(403).json({
@@ -44,24 +44,24 @@ router.get('/my-grades', (req, res, next) => {
 router.get('/student/:studentId', getStudentGrades);
 router.get('/course/:courseId', getCourseGrades);
 
-// Grade CRUD routes
+
 router.get('/:id', getGrade);
 
 router.post('/', (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Only admins and teachers can create grades'
+      message: 'Only admins can create grades'
     });
   }
   next();
 }, createGrade);
 
 router.put('/:id', (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Only admins and teachers can update grades'
+      message: 'Only admins can update grades'
     });
   }
   next();
@@ -78,3 +78,5 @@ router.delete('/:id', (req, res, next) => {
 }, deleteGrade);
 
 module.exports = router;
+
+

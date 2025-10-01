@@ -3,17 +3,16 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const {
   getStudentDashboard,
-  getTeacherDashboard,
   getAdminDashboard,
   getStats,
   getRecentActivity,
   getUpcomingEvents
 } = require('../controllers/dashboard');
 
-// All routes require authentication
+
 router.use(protect);
 
-// General dashboard route - returns data based on user role
+
 router.get('/', async (req, res) => {
   try {
     const { role } = req.user;
@@ -21,8 +20,6 @@ router.get('/', async (req, res) => {
     switch (role) {
       case 'admin':
         return await getAdminDashboard(req, res);
-      case 'teacher':
-        return await getTeacherDashboard(req, res);
       case 'student':
         return await getStudentDashboard(req, res);
       default:
@@ -40,7 +37,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Student dashboard
+
 router.get('/student', (req, res, next) => {
   if (req.user.role !== 'student') {
     return res.status(403).json({
@@ -51,18 +48,7 @@ router.get('/student', (req, res, next) => {
   next();
 }, getStudentDashboard);
 
-// Teacher dashboard
-router.get('/teacher', (req, res, next) => {
-  if (req.user.role !== 'teacher') {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied. Teacher role required.'
-    });
-  }
-  next();
-}, getTeacherDashboard);
 
-// Admin dashboard
 router.get('/admin', (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({
@@ -73,9 +59,11 @@ router.get('/admin', (req, res, next) => {
   next();
 }, getAdminDashboard);
 
-// General stats (accessible by all authenticated users)
+
 router.get('/stats', getStats);
 router.get('/activity', getRecentActivity);
 router.get('/events', getUpcomingEvents);
 
 module.exports = router;
+
+

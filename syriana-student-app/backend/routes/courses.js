@@ -14,19 +14,19 @@ const {
   getAvailableCourses
 } = require('../controllers/courses');
 
-// All routes require authentication
+
 router.use(protect);
 
-// Public routes for authenticated users
+
 router.get('/', getCourses);
 router.get('/my-courses', getMyCourses);
 router.get('/available', getAvailableCourses);
 
-// Course-specific routes
+
 router.get('/:id', getCourse);
 router.get('/:id/students', getCourseStudents);
 
-// Enrollment routes (students only)
+
 router.post('/:id/enroll', (req, res, next) => {
   if (req.user.role !== 'student') {
     return res.status(403).json({
@@ -47,22 +47,22 @@ router.delete('/:id/enroll', (req, res, next) => {
   next();
 }, unenrollFromCourse);
 
-// Admin/Teacher routes
+
 router.post('/', (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Only admins and teachers can create courses'
+      message: 'Only admins can create courses'
     });
   }
   next();
 }, createCourse);
 
 router.put('/:id', (req, res, next) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
+  if (req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
-      message: 'Only admins and teachers can update courses'
+      message: 'Only admins can update courses'
     });
   }
   next();
@@ -79,3 +79,5 @@ router.delete('/:id', (req, res, next) => {
 }, deleteCourse);
 
 module.exports = router;
+
+

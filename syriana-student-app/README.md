@@ -1,37 +1,64 @@
-# Syriana Student App
+# Syriana Student Management System
 
-A comprehensive student management system built with React frontend and Node.js backend.
+A full-stack web application for managing student information, courses, and grades at Syriana University.
 
-## Project Structure
+## Overview
+
+This application provides a comprehensive platform for students, teachers, and administrators to manage academic activities. Built with modern web technologies, it offers role-based access control and a clean, intuitive interface.
+
+## Architecture
 
 ```
 syriana-student-app/
-├── client/                  # React frontend
+├── frontend/          # React SPA with Tailwind CSS
 │   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/           # Dashboard, Login, Register, etc.
-│   │   ├── services/        # API calls
-│   │   └── context/         # Auth & Role context
-├── server/                  # Node.js backend
-│   ├── controllers/         # Business logic
-│   ├── models/              # Mongoose schemas
-│   ├── routes/              # Express routes
-│   ├── middleware/          # Auth, role checks
-│   ├── utils/               # Helpers (e.g., validators)
-│   └── config/              # DB connection, env setup
-├── docker-compose.yml
-├── .env
-└── README.md
+│   │   ├── components/  # Reusable UI components
+│   │   ├── pages/       # Main application pages
+│   │   ├── services/    # API communication layer
+│   │   └── context/     # React context for state management
+├── backend/           # Node.js/Express API server
+│   ├── controllers/   # Request handlers
+│   ├── models/        # MongoDB schemas
+│   ├── routes/        # API endpoints
+│   ├── middleware/    # Authentication & validation
+│   ├── config/        # Database and app configuration
+│   └── scripts/       # Database setup and utilities
+└── docker-compose.yml # Development environment
 ```
 
-## Features
+## Key Features
 
-- User authentication and authorization
-- Role-based access control (Student, Teacher, Admin)
-- Student dashboard
-- Course management
-- Grade tracking
-- User profile management
+- **Multi-role Authentication**: Separate login flows for students, teachers, and admins
+- **Course Management**: Teachers can create and manage their courses
+- **Grade Tracking**: Comprehensive grade management with GPA calculations
+- **Dashboard Analytics**: Role-specific dashboards with relevant metrics
+- **User Management**: Admin panel for managing all users
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+
+## Tech Stack
+
+### Frontend
+
+- React 18 with Hooks
+- React Router for navigation
+- Tailwind CSS for styling
+- Lucide React for icons
+- Axios for API calls
+
+### Backend
+
+- Node.js with Express.js
+- MongoDB with Mongoose ODM
+- JWT for authentication
+- bcryptjs for password hashing
+- Comprehensive middleware stack (CORS, security, rate limiting)
+
+### Development Tools
+
+- Jest for testing (49 comprehensive API tests)
+- Docker for containerization
+- ESLint for code quality
+- Concurrently for development workflow
 
 ## Getting Started
 
@@ -44,61 +71,90 @@ syriana-student-app/
 ### Installation
 
 1. Clone the repository
-```bash
-git clone <repository-url>
-cd syriana-student-app
-```
+
+   ```bash
+   git clone <repository-url>
+   cd syriana-student-app
+   ```
 
 2. Install dependencies for both client and server
-```bash
-# Install server dependencies
-cd server
-npm install
 
-# Install client dependencies
-cd ../client
-npm install
-```
+   ```bash
+   # Install server dependencies
+   cd backend
+   npm install
+
+   # Install client dependencies
+   cd ../frontend
+   npm install
+   ```
 
 3. Set up environment variables
-```bash
-cp .env.example .env
-# Edit .env with your configuration
-```
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
 
 4. Start the development servers
-```bash
-# Start the backend server
-cd server
-npm run dev
 
-# In a new terminal, start the frontend
-cd client
-npm start
-```
+   ```bash
+   # Start the backend server
+   cd backend
+   npm run dev
+
+   # In a new terminal, start the frontend
+   cd frontend
+   npm start
+   ```
 
 ### Using Docker
 
 ```bash
-docker-compose up
+docker-compose up --build
 ```
 
-## API Endpoints
+## Environment Variables
 
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/profile` - Get user profile
-- `GET /api/students` - Get all students (Admin only)
-- `GET /api/courses` - Get courses
-- `POST /api/grades` - Add grades (Teacher only)
+Create a `.env` file in the backend directory with the following variables:
+
+```env
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/syriana-student-app
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRE=30d
+CLIENT_URL=http://localhost:3000
+```
+
+## API Documentation
+
+The API provides the following endpoints:
+
+- `POST /api/auth/login` - User authentication
+- `GET /api/dashboard` - Role-specific dashboard data
+- `GET /api/courses` - Course management
+- `GET /api/grades` - Grade management
+- `GET /api/users` - User management (admin only)
+
+## Testing
+
+Run the comprehensive test suite:
+
+```bash
+cd backend
+npm test
+```
+
+All 49 API tests should pass, covering authentication, authorization, CRUD operations, and edge cases.
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+3. Make your changes
+4. Run tests to ensure everything works
+5. Submit a pull request
 
 ## License
 

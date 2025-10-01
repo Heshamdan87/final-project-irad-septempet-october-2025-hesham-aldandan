@@ -15,27 +15,10 @@ const addTestData = async () => {
     // Add test users (skip if they exist)
     const users = [
       {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@test.com',
-        password: 'password123',
-        role: 'teacher',
-        department: 'Computer Science',
-        isEmailVerified: true
-      },
-      {
-        firstName: 'Jane',
-        lastName: 'Smith',
-        email: 'jane.smith@test.com',
-        password: 'password123',
-        role: 'teacher',
-        department: 'Mathematics',
-        isEmailVerified: true
-      },
-      {
         firstName: 'Alice',
         lastName: 'Johnson',
         email: 'alice.johnson@test.com',
+        username: 'alicejohnson',
         password: 'password123',
         role: 'student',
         major: 'Computer Science',
@@ -47,6 +30,7 @@ const addTestData = async () => {
         firstName: 'Bob',
         lastName: 'Wilson',
         email: 'bob.wilson@test.com',
+        username: 'bobwilson',
         password: 'password123',
         role: 'student',
         major: 'Mathematics',
@@ -58,6 +42,7 @@ const addTestData = async () => {
         firstName: 'Charlie',
         lastName: 'Brown',
         email: 'charlie.brown@test.com',
+        username: 'charliebrown',
         password: 'password123',
         role: 'student',
         major: 'Computer Science',
@@ -78,10 +63,10 @@ const addTestData = async () => {
     }
 
     // Get teachers and students
-    const teachers = await User.find({ role: 'teacher' });
+    const teachers = await User.find({ role: 'admin' }); // Use admin as teacher
     const students = await User.find({ role: 'student' });
 
-    console.log(`Found ${teachers.length} teachers and ${students.length} students`);
+    console.log(`Found ${teachers.length} admins and ${students.length} students`);
 
     // Add test courses
     const courses = [
@@ -91,7 +76,7 @@ const addTestData = async () => {
         description: 'Basic concepts of computer science and programming',
         credits: 3,
         department: 'Computer Science',
-        teacher: teachers[0]._id,
+        teacher: teachers.length > 0 ? teachers[0]._id : null,
         students: students.length >= 2 ? [{ student: students[0]._id }, { student: students[2]._id }] : [],
         schedule: {
           days: ['Monday', 'Wednesday'],
@@ -113,7 +98,7 @@ const addTestData = async () => {
         description: 'Advanced calculus concepts including integration and series',
         credits: 4,
         department: 'Mathematics',
-        teacher: teachers.length > 1 ? teachers[1]._id : teachers[0]._id,
+        teacher: teachers.length > 0 ? teachers[0]._id : null,
         students: students.length > 0 ? [{ student: students[0]._id }] : [],
         schedule: {
           days: ['Tuesday', 'Thursday'],
@@ -154,3 +139,4 @@ const run = async () => {
 };
 
 run();
+

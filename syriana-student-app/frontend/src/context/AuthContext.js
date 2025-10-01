@@ -1,103 +1,111 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import { authService } from '../services/api';
 
-// Initial state
+
 const initialState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: false,
-  isLoading: true,
-  error: null,
+  user: null,                    // Current authenticated user object
+  token: localStorage.getItem('token'), // JWT token from localStorage
+  isAuthenticated: false,        // Boolean indicating if user is logged in
+  isLoading: true,              // Loading state for async operations
+  error: null,                   // Error message for failed operations
 };
 
-// Action types
+
 const AUTH_ACTIONS = {
-  LOGIN_START: 'LOGIN_START',
-  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-  LOGIN_FAILURE: 'LOGIN_FAILURE',
-  LOGOUT: 'LOGOUT',
-  LOAD_USER_START: 'LOAD_USER_START',
-  LOAD_USER_SUCCESS: 'LOAD_USER_SUCCESS',
-  LOAD_USER_FAILURE: 'LOAD_USER_FAILURE',
-  UPDATE_PROFILE: 'UPDATE_PROFILE',
-  CLEAR_ERROR: 'CLEAR_ERROR',
+  LOGIN_START: 'LOGIN_START',           // Start login process
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',       // Login completed successfully
+  LOGIN_FAILURE: 'LOGIN_FAILURE',       // Login failed
+  LOGOUT: 'LOGOUT',                     // User logged out
+  LOAD_USER_START: 'LOAD_USER_START',   // Start loading user data
+  LOAD_USER_SUCCESS: 'LOAD_USER_SUCCESS', // User data loaded successfully
+  LOAD_USER_FAILURE: 'LOAD_USER_FAILURE', // Failed to load user data
+  UPDATE_PROFILE: 'UPDATE_PROFILE',     // Profile updated
+  CLEAR_ERROR: 'CLEAR_ERROR',           // Clear error state
 };
 
-// Reducer
+
 const authReducer = (state, action) => {
   switch (action.type) {
+
     case AUTH_ACTIONS.LOGIN_START:
     case AUTH_ACTIONS.LOAD_USER_START:
       return {
         ...state,
-        isLoading: true,
-        error: null,
+        isLoading: true,    // Set loading to true
+        error: null,        // Clear any previous errors
       };
 
+
     case AUTH_ACTIONS.LOGIN_SUCCESS:
-      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('token', action.payload.token); // Persist token
       return {
         ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
+        user: action.payload.user,        // Store user data
+        token: action.payload.token,      // Store token in state
+        isAuthenticated: true,            // Mark as authenticated
+        isLoading: false,                 // Stop loading
+        error: null,                      // Clear errors
       };
+
 
     case AUTH_ACTIONS.LOAD_USER_SUCCESS:
       return {
         ...state,
-        user: action.payload,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
+        user: action.payload,             // Store loaded user data
+        isAuthenticated: true,            // Mark as authenticated
+        isLoading: false,                 // Stop loading
+        error: null,                      // Clear errors
       };
+
 
     case AUTH_ACTIONS.LOGIN_FAILURE:
     case AUTH_ACTIONS.LOAD_USER_FAILURE:
-      localStorage.removeItem('token');
+      localStorage.removeItem('token');   // Remove invalid token
       return {
         ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: action.payload,
+        user: null,                       // Clear user data
+        token: null,                      // Clear token
+        isAuthenticated: false,           // Mark as not authenticated
+        isLoading: false,                 // Stop loading
+        error: action.payload,            // Store error message
       };
 
+
     case AUTH_ACTIONS.LOGOUT:
-      localStorage.removeItem('token');
+      localStorage.removeItem('token');   // Remove token from storage
       return {
         ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null,
+        user: null,                       // Clear user data
+        token: null,                      // Clear token
+        isAuthenticated: false,           // Mark as not authenticated
+        isLoading: false,                 // Stop loading
+        error: null,                      // Clear errors
       };
+
 
     case AUTH_ACTIONS.UPDATE_PROFILE:
       return {
         ...state,
-        user: { ...state.user, ...action.payload },
+        user: { ...state.user, ...action.payload }, // Merge updated profile data
       };
+
 
     case AUTH_ACTIONS.CLEAR_ERROR:
       return {
         ...state,
-        error: null,
+        error: null,                      // Clear error message
       };
+
 
     default:
       return state;
   }
 };
 
-// Create context
+
 const AuthContext = createContext();
 
-// Custom hook to use auth context
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -106,11 +114,12 @@ export const useAuth = () => {
   return context;
 };
 
-// Auth provider component
+
 export const AuthProvider = ({ children }) => {
+
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check if user is authenticated on app load
+  
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
@@ -129,6 +138,7 @@ export const AuthProvider = ({ children }) => {
           });
         }
       } else {
+
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_FAILURE,
           payload: null,
@@ -139,14 +149,14 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Login function
-  const login = async (credentials) => {
+  
+  const login = useCallback(async (credentials) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
       const response = await authService.login(credentials);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: response.data,
+        payload: response.data.data,
       });
       return response.data;
     } catch (error) {
@@ -157,16 +167,16 @@ export const AuthProvider = ({ children }) => {
       });
       throw error;
     }
-  };
+  }, []);
 
-  // Register function
-  const register = async (userData) => {
+  
+  const register = useCallback(async (userData) => {
     try {
       dispatch({ type: AUTH_ACTIONS.LOGIN_START });
       const response = await authService.register(userData);
       dispatch({
         type: AUTH_ACTIONS.LOGIN_SUCCESS,
-        payload: response.data,
+        payload: response.data.data,
       });
       return response.data;
     } catch (error) {
@@ -177,88 +187,76 @@ export const AuthProvider = ({ children }) => {
       });
       throw error;
     }
-  };
+  }, []);
 
-  // Logout function
-  const logout = async () => {
+  
+  const logout = useCallback(async () => {
     try {
       await authService.logout();
     } catch (error) {
-      // Even if logout fails on server, remove local data
       console.error('Logout error:', error);
     } finally {
+
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }
-  };
+  }, []);
 
-  // Update profile function
-  const updateProfile = async (profileData) => {
-    try {
-      const response = await authService.updateProfile(profileData);
-      dispatch({
-        type: AUTH_ACTIONS.UPDATE_PROFILE,
-        payload: response.data.user,
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
+  
+  const updateProfile = useCallback(async (profileData) => {
+    const response = await authService.updateProfile(profileData);
+    dispatch({
+      type: AUTH_ACTIONS.UPDATE_PROFILE,
+      payload: response.data.user,
+    });
+    return response.data;
+  }, []);
 
-  // Change password function
-  const changePassword = async (passwordData) => {
-    try {
-      const response = await authService.changePassword(passwordData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
+  
+  const changePassword = useCallback(async (passwordData) => {
+    const response = await authService.changePassword(passwordData);
+    return response.data;
+  }, []);
 
-  // Clear error function
-  const clearError = () => {
+  
+  const clearError = useCallback(() => {
     dispatch({ type: AUTH_ACTIONS.CLEAR_ERROR });
-  };
+  }, []);
 
-  // Check if user has specific role
-  const hasRole = (role) => {
+  
+  const hasRole = useCallback((role) => {
     return state.user?.role === role;
-  };
+  }, [state.user?.role]);
 
-  // Check if user has any of the specified roles
-  const hasAnyRole = (roles) => {
+  
+  const hasAnyRole = useCallback((roles) => {
     return roles.includes(state.user?.role);
-  };
+  }, [state.user?.role]);
 
-  // Check if user is admin
-  const isAdmin = () => {
+  
+  const isAdmin = useCallback(() => {
     return state.user?.role === 'admin';
-  };
+  }, [state.user?.role]);
 
-  // Check if user is teacher
-  const isTeacher = () => {
-    return state.user?.role === 'teacher';
-  };
-
-  // Check if user is student
-  const isStudent = () => {
+  
+  const isStudent = useCallback(() => {
     return state.user?.role === 'student';
-  };
+  }, [state.user?.role]);
 
-  const value = {
-    ...state,
-    login,
+
+  const value = useMemo(() => ({
+    ...state,           // Spread current state
+    login,              // Authentication methods
     register,
     logout,
     updateProfile,
     changePassword,
-    clearError,
-    hasRole,
+    clearError,         // State management
+    hasRole,            // Role checking utilities
     hasAnyRole,
     isAdmin,
-    isTeacher,
     isStudent,
-  };
+  }), [state, login, register, logout, updateProfile, changePassword, clearError, hasRole, hasAnyRole, isAdmin, isStudent]);
+
 
   return (
     <AuthContext.Provider value={value}>
@@ -266,3 +264,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+

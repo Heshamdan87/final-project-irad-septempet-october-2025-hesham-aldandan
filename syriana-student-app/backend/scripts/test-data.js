@@ -18,7 +18,7 @@ const createTestData = async () => {
     console.log('Creating test data...');
 
     // Check if test data already exists
-    const existingUsers = await User.find({ email: { $in: ['admin@syriana.edu', 'teacher1@syriana.edu', 'student1@syriana.edu'] } });
+    const existingUsers = await User.find({ email: { $in: ['student1@syriana.edu', 'student2@syriana.edu', 'admin@syriana.edu'] } });
     if (existingUsers.length > 0) {
       console.log('Test data already exists. Skipping creation.');
       return;
@@ -35,23 +35,29 @@ const createTestData = async () => {
         isEmailVerified: true
       },
       {
-        firstName: 'Teacher',
-        lastName: 'One',
-        email: 'teacher1@syriana.edu',
-        password: 'teacher123',
-        role: 'teacher',
-        department: 'Computer Science',
-        isEmailVerified: true
-      },
-      {
-        firstName: 'Student',
-        lastName: 'One',
+        firstName: 'John',
+        lastName: 'Doe',
         email: 'student1@syriana.edu',
         password: 'student123',
         role: 'student',
+        studentId: 'STU001001',
         major: 'Computer Science',
+        department: 'Computer Science',
         academicYear: 'Junior',
         gpa: 3.5,
+        isEmailVerified: true
+      },
+      {
+        firstName: 'Jane',
+        lastName: 'Smith',
+        email: 'student2@syriana.edu',
+        password: 'student123',
+        role: 'student',
+        studentId: 'STU001002',
+        major: 'Mathematics',
+        department: 'Mathematics',
+        academicYear: 'Senior',
+        gpa: 3.8,
         isEmailVerified: true
       }
     ];
@@ -65,7 +71,7 @@ const createTestData = async () => {
     console.log('Users created:', createdUsers.length);
 
     // Get teacher and student IDs
-    const teachers = createdUsers.filter(u => u.role === 'teacher');
+    const teachers = createdUsers.filter(u => u.role === 'admin'); // Use admin as teacher
     const students = createdUsers.filter(u => u.role === 'student');
 
     // Check if courses already exist
@@ -123,7 +129,15 @@ const createTestData = async () => {
       }
     ];
 
-    const createdCourses = await Course.insertMany(courses);
+    // Create test courses one by one to avoid duplicates
+    const createdCourses = [];
+    for (const courseData of courses) {
+      const existingCourse = await Course.findOne({ courseCode: courseData.courseCode });
+      if (!existingCourse) {
+        const course = await Course.create(courseData);
+        createdCourses.push(course);
+      }
+    }
     console.log('Courses created:', createdCourses.length);
 
     console.log('Test data created successfully!');
@@ -137,5 +151,6 @@ module.exports = { createTestData };
 
 // Only run if this file is executed directly
 if (require.main === module) {
-  run();
+  createTestData();
 }
+

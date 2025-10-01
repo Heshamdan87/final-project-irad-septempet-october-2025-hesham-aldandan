@@ -9,7 +9,7 @@ const connectDB = async () => {
 
     console.log(`🍃 MongoDB Connected: ${conn.connection.host}`);
     
-    // Handle connection events
+
     mongoose.connection.on('error', (err) => {
       console.error(`MongoDB connection error: ${err}`);
     });
@@ -18,17 +18,19 @@ const connectDB = async () => {
       console.log('MongoDB disconnected');
     });
 
-    // Graceful shutdown
-    // process.on('SIGINT', async () => {
-    //   await mongoose.connection.close();
-    //   console.log('MongoDB connection closed through app termination');
-    //   process.exit(0);
-    // });
+
+
+
+
+
+
 
   } catch (error) {
     console.error(`Error connecting to MongoDB: ${error.message}`);
-    // process.exit(1); // Commented out to allow server to start without MongoDB
+
   }
 };
 
 module.exports = connectDB;
+
+

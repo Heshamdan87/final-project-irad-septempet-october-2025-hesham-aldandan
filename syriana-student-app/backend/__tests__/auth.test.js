@@ -15,7 +15,7 @@ describe('Auth API', () => {
     // Clear test database collections
     const collections = mongoose.connection.collections;
     for (const key in collections) {
-      await collections[key].deleteMany({});
+      await collections[key].drop();
     }
 
     // Seed test data
@@ -42,21 +42,6 @@ describe('Auth API', () => {
       expect(response.body.data).toHaveProperty('token');
       expect(response.body.data).toHaveProperty('user');
       expect(response.body.data.user).toHaveProperty('role', 'admin');
-    });
-
-    it('should login with valid teacher credentials', async () => {
-      const response = await request(app)
-        .post('/api/auth/login')
-        .send({
-          email: 'teacher1@syriana.edu',
-          password: 'teacher123'
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body.data).toHaveProperty('token');
-      expect(response.body.data).toHaveProperty('user');
-      expect(response.body.data.user).toHaveProperty('role', 'teacher');
     });
 
     it('should login with valid student credentials', async () => {

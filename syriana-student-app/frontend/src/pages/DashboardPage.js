@@ -5,18 +5,17 @@ import { Link } from 'react-router-dom';
 import { userService } from '../services/api';
 import toast from 'react-hot-toast';
 
-
+// Main dashboard component - handles both admin and student views
 const DashboardPage = () => {
-
   const { user, logout } = useAuth();
 
-
+  // Admin-specific state for student management
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
 
-
+  // Form state for adding/editing students
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -29,14 +28,14 @@ const DashboardPage = () => {
     confirmPassword: ''
   });
 
-
+  // Load students data when admin user is present
   useEffect(() => {
     if (user?.role === 'admin') {
       fetchStudents();
     }
   }, [user]);
 
-  
+  // Fetch all students for admin view
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -50,7 +49,7 @@ const DashboardPage = () => {
     }
   };
 
-  
+  // Handle user logout
   const handleLogout = async () => {
     try {
       await logout();
@@ -59,7 +58,7 @@ const DashboardPage = () => {
     }
   };
 
-  
+  // Add new student to the system
   const handleAddStudent = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -85,7 +84,7 @@ const DashboardPage = () => {
     }
   };
 
-  
+  // Update existing student information
   const handleEditStudent = async (e) => {
     e.preventDefault();
     try {
@@ -103,7 +102,7 @@ const DashboardPage = () => {
     }
   };
 
-  
+  // Delete student from the system
   const handleDeleteStudent = async (studentId) => {
     if (!window.confirm('Are you sure you want to delete this student?')) {
       return;
@@ -122,7 +121,7 @@ const DashboardPage = () => {
     }
   };
 
-  
+  // Initialize form with student data for editing
   const startEdit = (student) => {
     setEditingStudent(student);
     setFormData({
@@ -138,7 +137,7 @@ const DashboardPage = () => {
     });
   };
 
-  
+  // Reset form to initial state
   const resetForm = () => {
     setShowAddForm(false);
     setEditingStudent(null);

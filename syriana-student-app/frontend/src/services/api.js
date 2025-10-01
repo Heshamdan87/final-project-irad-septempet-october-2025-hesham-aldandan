@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-
+// Create axios instance with default configuration
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
   timeout: 10000,
@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-
+// Request interceptor - automatically add auth token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,24 +23,25 @@ api.interceptors.request.use(
   }
 );
 
-
+// Response interceptor - handle common errors and token expiration
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Token expired or invalid - clear storage and redirect to login
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
-    
+
     if (!error.response) {
       error.message = 'Network error. Please check your internet connection.';
     }
-    
+
     return Promise.reject(error);
   }
 );
 
-
+// Authentication service - handles user login, registration, and profile management
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
@@ -53,7 +54,7 @@ export const authService = {
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
 };
 
-
+// User management service - CRUD operations for users (admin functionality)
 export const userService = {
   getAllUsers: (params) => api.get('/users', { params }),
   getUserById: (id) => api.get(`/users/${id}`),
@@ -66,7 +67,7 @@ export const userService = {
   }),
 };
 
-
+// Course management service - handles course CRUD and enrollment operations
 export const courseService = {
   getAllCourses: (params) => api.get('/courses', { params }),
   getCourseById: (id) => api.get(`/courses/${id}`),
@@ -83,7 +84,7 @@ export const courseService = {
   }),
 };
 
-
+// Grade management service - handles grade CRUD and student/course specific operations
 export const gradeService = {
   getGrades: (params) => api.get('/grades', { params }),
   getGradeById: (id) => api.get(`/grades/${id}`),
@@ -94,13 +95,13 @@ export const gradeService = {
   getCourseGrades: (courseId) => api.get(`/grades/course/${courseId}`),
   getMyGrades: () => api.get('/grades/my-grades'),
   bulkCreateGrades: (gradesData) => api.post('/grades/bulk', gradesData),
-  exportGrades: (params) => api.get('/grades/export', { 
+  exportGrades: (params) => api.get('/grades/export', {
     params,
     responseType: 'blob'
   }),
 };
 
-
+// Dashboard service - provides data for admin and student dashboard views
 export const dashboardService = {
   getStudentDashboard: () => api.get('/dashboard/student'),
   getAdminDashboard: () => api.get('/dashboard/admin'),
@@ -109,7 +110,7 @@ export const dashboardService = {
   getUpcomingEvents: () => api.get('/dashboard/events'),
 };
 
-
+// Notification service - manages user notifications
 export const notificationService = {
   getNotifications: (params) => api.get('/notifications', { params }),
   markAsRead: (notificationId) => api.put(`/notifications/${notificationId}/read`),
@@ -118,11 +119,11 @@ export const notificationService = {
   getUnreadCount: () => api.get('/notifications/unread-count'),
 };
 
-
+// Generic file upload utility with progress tracking
 export const uploadFile = async (endpoint, file, onProgress) => {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   return api.post(endpoint, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -138,12 +139,12 @@ export const uploadFile = async (endpoint, file, onProgress) => {
   });
 };
 
-
+// Centralized error handling utility for API responses
 export const handleApiError = (error) => {
   if (error.response) {
-
+    // Server responded with error status
     const { status, data } = error.response;
-    
+
     switch (status) {
       case 400:
         return data.message || 'Bad request. Please check your input.';
@@ -161,10 +162,10 @@ export const handleApiError = (error) => {
         return data.message || `Error ${status}: Something went wrong.`;
     }
   } else if (error.request) {
-
+    // Network error - no response received
     return 'Network error. Please check your internet connection.';
   } else {
-
+    // Other error
     return error.message || 'An unexpected error occurred.';
   }
 };

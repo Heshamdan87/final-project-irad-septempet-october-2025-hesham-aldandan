@@ -4,7 +4,6 @@ const app = require('../server');
 
 describe('Grades API', () => {
   let adminToken;
-  let teacherToken;
   let studentToken;
   let testStudentId;
   let testCourseId;
@@ -22,7 +21,7 @@ describe('Grades API', () => {
     // Clear test database collections
     const collections = mongoose.connection.collections;
     for (const key in collections) {
-      await collections[key].deleteMany({});
+      await collections[key].drop();
     }
 
     // Seed test data
@@ -34,11 +33,6 @@ describe('Grades API', () => {
       .post('/api/auth/login')
       .send({ email: 'admin@syriana.edu', password: 'admin123' });
     adminToken = adminLogin.body.data.token;
-
-    const teacherLogin = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'teacher1@syriana.edu', password: 'teacher123' });
-    teacherToken = teacherLogin.body.data.token;
 
     const studentLogin = await request(app)
       .post('/api/auth/login')
@@ -71,15 +65,6 @@ describe('Grades API', () => {
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-    });
-
-    it('should return grades for teacher', async () => {
-      const response = await request(app)
-        .get('/api/grades')
-        .set('Authorization', `Bearer ${teacherToken}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('success', true);
     });
 
     it('should return student grades for student', async () => {
@@ -127,28 +112,6 @@ describe('Grades API', () => {
       createdGradeId = response.body.data._id;
     });
 
-    it('should create new grade for teacher', async () => {
-      const newGrade = {
-        student: testStudentId,
-        course: testCourseId,
-        grade: 'B+',
-        semester: 'Spring',
-        year: 2025,
-        credits: 3,
-        comments: 'Good work'
-      };
-
-      const response = await request(app)
-        .post('/api/grades')
-        .set('Authorization', `Bearer ${teacherToken}`)
-        .send(newGrade);
-
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-      expect(response.body.data).toHaveProperty('grade', 'B+');
-    });
-
     it('should return 403 for student trying to create grade', async () => {
       const newGrade = {
         student: 'someStudentId',
@@ -183,22 +146,6 @@ describe('Grades API', () => {
       expect(response.body).toHaveProperty('success', true);
       expect(response.body.data).toHaveProperty('grade', 'A+');
       expect(response.body.data).toHaveProperty('comments', 'Updated grade');
-    });
-
-    it('should update grade for teacher', async () => {
-      const updateData = {
-        grade: 'A-',
-        comments: 'Updated by teacher'
-      };
-
-      const response = await request(app)
-        .put(`/api/grades/${createdGradeId}`)
-        .set('Authorization', `Bearer ${teacherToken}`)
-        .send(updateData);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body.data).toHaveProperty('grade', 'A-');
     });
 
     it('should return 403 for student trying to update grade', async () => {
@@ -239,3 +186,4 @@ describe('Grades API', () => {
     });
   });
 });
+

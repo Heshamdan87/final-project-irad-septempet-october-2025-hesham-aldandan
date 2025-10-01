@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -14,7 +13,6 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  // Redirect to dashboard if already authenticated
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -23,3 +21,4 @@ const PublicRoute = ({ children }) => {
 };
 
 export default PublicRoute;
+

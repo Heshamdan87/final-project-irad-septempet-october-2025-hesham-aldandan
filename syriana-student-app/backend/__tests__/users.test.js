@@ -4,7 +4,6 @@ const app = require('../server');
 
 describe('Users API', () => {
   let adminToken;
-  let teacherToken;
   let studentToken;
 
   beforeAll(async () => {
@@ -19,10 +18,8 @@ describe('Users API', () => {
     // Clear test database collections
     const collections = mongoose.connection.collections;
     for (const key in collections) {
-      await collections[key].deleteMany({});
-    }
-
-    // Seed test data
+      await collections[key].drop();
+    }    // Seed test data
     const testDataScript = require('../scripts/test-data');
     await testDataScript.createTestData();
 
@@ -31,11 +28,6 @@ describe('Users API', () => {
       .post('/api/auth/login')
       .send({ email: 'admin@syriana.edu', password: 'admin123' });
     adminToken = adminLogin.body.data.token;
-
-    const teacherLogin = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'teacher1@syriana.edu', password: 'teacher123' });
-    teacherToken = teacherLogin.body.data.token;
 
     const studentLogin = await request(app)
       .post('/api/auth/login')
@@ -58,16 +50,6 @@ describe('Users API', () => {
       expect(response.body).toHaveProperty('success', true);
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
-    });
-
-    it('should return 403 for teacher trying to access users', async () => {
-      const response = await request(app)
-        .get('/api/users')
-        .set('Authorization', `Bearer ${teacherToken}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty('success', false);
-      expect(response.body).toHaveProperty('message', 'Access denied. Admin role required.');
     });
 
     it('should return 401 without authentication', async () => {
@@ -170,23 +152,7 @@ describe('Users API', () => {
       expect(response.body.data).toHaveProperty('email', 'testuser@test.com');
     });
 
-    it('should return 403 for teacher trying to create user', async () => {
-      const newUser = {
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'testuser2@test.com',
-        password: 'password123',
-        role: 'student'
-      };
 
-      const response = await request(app)
-        .post('/api/users')
-        .set('Authorization', `Bearer ${teacherToken}`)
-        .send(newUser);
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty('success', false);
-    });
   });
 
   describe('DELETE /api/users/:id', () => {
@@ -213,26 +179,9 @@ describe('Users API', () => {
       expect(response.body).toHaveProperty('success', true);
     });
 
-    it('should return 403 for teacher trying to delete user', async () => {
-      const response = await request(app)
-        .delete('/api/users/507f1f77bcf86cd799439011')
-        .set('Authorization', `Bearer ${teacherToken}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty('success', false);
-    });
   });
 
   describe('Role-based access control', () => {
-    it('should return 403 for teacher trying to access admin routes', async () => {
-      const response = await request(app)
-        .get('/api/users')
-        .set('Authorization', `Bearer ${teacherToken}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty('success', false);
-    });
-
     it('should return 403 for student trying to access admin routes', async () => {
       const response = await request(app)
         .get('/api/users')

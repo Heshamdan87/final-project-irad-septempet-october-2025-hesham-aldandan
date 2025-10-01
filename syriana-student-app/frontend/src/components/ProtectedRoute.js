@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
-  // Show loading while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -14,12 +13,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/student-login" replace />;
   }
 
-  // Check role-based access
   if (user?.role === 'admin') {
     return children;
   }
@@ -32,3 +29,4 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 };
 
 export default ProtectedRoute;
+

@@ -4,7 +4,6 @@ const app = require('../server');
 
 describe('Dashboard API', () => {
   let adminToken;
-  let teacherToken;
   let studentToken;
 
   beforeAll(async () => {
@@ -19,7 +18,7 @@ describe('Dashboard API', () => {
     // Clear test database collections
     const collections = mongoose.connection.collections;
     for (const key in collections) {
-      await collections[key].deleteMany({});
+      await collections[key].drop();
     }
 
     // Seed test data
@@ -31,11 +30,6 @@ describe('Dashboard API', () => {
       .post('/api/auth/login')
       .send({ email: 'admin@syriana.edu', password: 'admin123' });
     adminToken = adminLogin.body.data.token;
-
-    const teacherLogin = await request(app)
-      .post('/api/auth/login')
-      .send({ email: 'teacher1@syriana.edu', password: 'teacher123' });
-    teacherToken = teacherLogin.body.data.token;
 
     const studentLogin = await request(app)
       .post('/api/auth/login')
@@ -68,28 +62,12 @@ describe('Dashboard API', () => {
 
       // Check user stats
       expect(dashboard.userStats).toHaveProperty('admins');
-      expect(dashboard.userStats).toHaveProperty('teachers');
       expect(dashboard.userStats).toHaveProperty('students');
 
       // Check that numbers are reasonable
       expect(typeof dashboard.totalUsers).toBe('number');
       expect(typeof dashboard.totalCourses).toBe('number');
       expect(typeof dashboard.totalGrades).toBe('number');
-    });
-
-    it('should return dashboard data for teacher', async () => {
-      const response = await request(app)
-        .get('/api/dashboard')
-        .set('Authorization', `Bearer ${teacherToken}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('success', true);
-      expect(response.body).toHaveProperty('data');
-
-      const dashboard = response.body.data;
-      expect(dashboard).toHaveProperty('myCourses');
-      expect(dashboard).toHaveProperty('myStudents');
-      expect(dashboard).toHaveProperty('recentGrades');
     });
 
     it('should return dashboard data for student', async () => {
@@ -128,7 +106,6 @@ describe('Dashboard API', () => {
 
       // Total users should equal sum of user types
       const totalFromStats = dashboard.userStats.admins +
-                           dashboard.userStats.teachers +
                            dashboard.userStats.students;
 
       expect(dashboard.totalUsers).toBe(totalFromStats);
@@ -167,3 +144,4 @@ describe('Dashboard API', () => {
     });
   });
 });
+
