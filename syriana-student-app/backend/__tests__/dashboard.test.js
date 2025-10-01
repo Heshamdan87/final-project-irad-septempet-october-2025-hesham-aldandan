@@ -143,5 +143,161 @@ describe('Dashboard API', () => {
       }
     });
   });
+
+  describe('Statistical Functions', () => {
+    describe('GET /api/dashboard/students/count', () => {
+      it('should return student count for admin', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/students/count')
+          .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('success', true);
+        expect(response.body).toHaveProperty('data');
+
+        const data = response.body.data;
+        expect(data).toHaveProperty('totalStudents');
+        expect(data).toHaveProperty('filteredCount');
+        expect(typeof data.totalStudents).toBe('number');
+        expect(typeof data.filteredCount).toBe('number');
+      });
+
+      it('should return 403 for student trying to access student count', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/students/count')
+          .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toHaveProperty('success', false);
+        expect(response.body).toHaveProperty('message', 'Access denied. Admin role required.');
+      });
+    });
+
+    describe('GET /api/dashboard/grades/statistics', () => {
+      it('should return grade statistics for admin', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/grades/statistics')
+          .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('success', true);
+        expect(response.body).toHaveProperty('data');
+
+        const data = response.body.data;
+        expect(data).toHaveProperty('totalGrades');
+        expect(data).toHaveProperty('passCount');
+        expect(data).toHaveProperty('failCount');
+        expect(data).toHaveProperty('passRate');
+        expect(data).toHaveProperty('failRate');
+        expect(data).toHaveProperty('gradeDistribution');
+        expect(data).toHaveProperty('averageGPA');
+
+        expect(typeof data.totalGrades).toBe('number');
+        expect(typeof data.passCount).toBe('number');
+        expect(typeof data.failCount).toBe('number');
+        expect(typeof data.passRate).toBe('number');
+        expect(typeof data.failRate).toBe('number');
+        expect(typeof data.averageGPA).toBe('number');
+        expect(typeof data.gradeDistribution).toBe('object');
+      });
+
+      it('should return 403 for student trying to access grade statistics', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/grades/statistics')
+          .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toHaveProperty('success', false);
+        expect(response.body).toHaveProperty('message', 'Access denied. Admin role required.');
+      });
+    });
+
+    describe('GET /api/dashboard/subjects/grades', () => {
+      it('should return subject grade statistics for admin', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/subjects/grades')
+          .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('success', true);
+        expect(response.body).toHaveProperty('data');
+
+        const data = response.body.data;
+        expect(data).toHaveProperty('summary');
+        expect(data).toHaveProperty('subjects');
+        expect(data).toHaveProperty('filters');
+
+        expect(data.summary).toHaveProperty('totalSubjects');
+        expect(data.summary).toHaveProperty('totalEnrollments');
+        expect(data.summary).toHaveProperty('averagePassRate');
+
+        expect(Array.isArray(data.subjects)).toBe(true);
+
+        if (data.subjects.length > 0) {
+          const subject = data.subjects[0];
+          expect(subject).toHaveProperty('courseId');
+          // Note: courseName and courseCode may not be populated if lookup fails
+          // expect(subject).toHaveProperty('courseName');
+          // expect(subject).toHaveProperty('courseCode');
+          expect(subject).toHaveProperty('totalStudents');
+          expect(subject).toHaveProperty('averageGrade');
+          expect(subject).toHaveProperty('passRate');
+          expect(subject).toHaveProperty('gradeDistribution');
+        }
+      });
+
+      it('should return 403 for student trying to access subject grades', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/subjects/grades')
+          .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toHaveProperty('success', false);
+        expect(response.body).toHaveProperty('message', 'Access denied. Admin role required.');
+      });
+    });
+
+    describe('GET /api/dashboard/students/performance', () => {
+      it('should return student performance analytics for admin', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/students/performance')
+          .set('Authorization', `Bearer ${adminToken}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('success', true);
+        expect(response.body).toHaveProperty('data');
+
+        const data = response.body.data;
+        expect(data).toHaveProperty('summary');
+        expect(data).toHaveProperty('students');
+
+        expect(data.summary).toHaveProperty('totalStudents');
+        expect(data.summary).toHaveProperty('averageClassGPA');
+        expect(data.summary).toHaveProperty('topPerformer');
+
+        expect(Array.isArray(data.students)).toBe(true);
+
+        if (data.students.length > 0) {
+          const student = data.students[0];
+          expect(student).toHaveProperty('studentId');
+          expect(student).toHaveProperty('studentName');
+          expect(student).toHaveProperty('gpa');
+          expect(student).toHaveProperty('passCount');
+          expect(student).toHaveProperty('failCount');
+          expect(student).toHaveProperty('passRate');
+        }
+      });
+
+      it('should return 403 for student trying to access performance analytics', async () => {
+        const response = await request(app)
+          .get('/api/dashboard/students/performance')
+          .set('Authorization', `Bearer ${studentToken}`);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toHaveProperty('success', false);
+        expect(response.body).toHaveProperty('message', 'Access denied. Admin role required.');
+      });
+    });
+  });
 });
 

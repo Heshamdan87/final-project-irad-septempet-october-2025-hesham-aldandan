@@ -6,7 +6,11 @@ const {
   getAdminDashboard,
   getStats,
   getRecentActivity,
-  getUpcomingEvents
+  getUpcomingEvents,
+  getStudentCount,
+  getGradeStatistics,
+  getSubjectGradeStatistics,
+  getStudentPerformanceAnalytics
 } = require('../controllers/dashboard');
 
 
@@ -63,6 +67,47 @@ router.get('/admin', (req, res, next) => {
 router.get('/stats', getStats);
 router.get('/activity', getRecentActivity);
 router.get('/events', getUpcomingEvents);
+
+// Admin-only statistical routes
+router.get('/students/count', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin role required.'
+    });
+  }
+  next();
+}, getStudentCount);
+
+router.get('/grades/statistics', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin role required.'
+    });
+  }
+  next();
+}, getGradeStatistics);
+
+router.get('/subjects/grades', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin role required.'
+    });
+  }
+  next();
+}, getSubjectGradeStatistics);
+
+router.get('/students/performance', (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin role required.'
+    });
+  }
+  next();
+}, getStudentPerformanceAnalytics);
 
 module.exports = router;
 
