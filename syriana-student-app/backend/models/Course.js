@@ -41,11 +41,6 @@ const courseSchema = new mongoose.Schema({
       'Engineering'
     ]
   },
-  teacher: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Please assign a teacher to this course']
-  },
   students: [{
     student: {
       type: mongoose.Schema.Types.ObjectId,
@@ -134,17 +129,17 @@ const courseSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Virtual for enrolled students count
+
 courseSchema.virtual('enrolledCount').get(function() {
   return this.students ? this.students.length : 0;
 });
 
-// Virtual for available spots
+
 courseSchema.virtual('availableSpots').get(function() {
   return this.capacity - (this.students ? this.students.length : 0);
 });
 
-// Virtual for course duration in weeks
+
 courseSchema.virtual('durationWeeks').get(function() {
   if (this.courseStart && this.courseEnd) {
     const diffTime = Math.abs(this.courseEnd - this.courseStart);
@@ -153,14 +148,13 @@ courseSchema.virtual('durationWeeks').get(function() {
   return 0;
 });
 
-// Index for better performance
+
 courseSchema.index({ courseCode: 1 });
-courseSchema.index({ teacher: 1 });
 courseSchema.index({ department: 1 });
 courseSchema.index({ semester: 1, year: 1 });
 courseSchema.index({ isActive: 1 });
 
-// Validation to ensure enrollment dates are logical
+
 courseSchema.pre('save', function(next) {
   if (this.enrollmentEnd <= this.enrollmentStart) {
     return next(new Error('Enrollment end date must be after enrollment start date'));
@@ -174,21 +168,16 @@ courseSchema.pre('save', function(next) {
   next();
 });
 
-// Static method to get courses by teacher
-courseSchema.statics.getCoursesByTeacher = function(teacherId) {
-  return this.find({ teacher: teacherId, isActive: true })
-    .populate('teacher', 'firstName lastName email')
-    .populate('students', 'firstName lastName email studentId');
-};
 
-// Static method to get available courses for enrollment
 courseSchema.statics.getAvailableCourses = function() {
   const now = new Date();
   return this.find({
     isActive: true,
     enrollmentStart: { $lte: now },
     enrollmentEnd: { $gte: now }
-  }).populate('teacher', 'firstName lastName email');
+  });
 };
 
 module.exports = mongoose.model('Course', courseSchema);
+
+

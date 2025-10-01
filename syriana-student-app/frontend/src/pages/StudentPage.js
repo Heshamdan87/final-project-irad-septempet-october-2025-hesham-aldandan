@@ -48,17 +48,6 @@ const StudentPage = () => {
     }
   };
 
-  const handleEnrollInCourse = async (courseId) => {
-    try {
-      await courseService.enrollInCourse(courseId);
-      toast.success('Successfully enrolled in course');
-      fetchMyCourses();
-      fetchDashboardData();
-    } catch (error) {
-      toast.error('Failed to enroll in course');
-    }
-  };
-
   const handleUnenrollFromCourse = async (courseId) => {
     try {
       await courseService.unenrollFromCourse(courseId);
@@ -197,7 +186,6 @@ const StudentPage = () => {
                     <h3 className="font-semibold">{course.title}</h3>
                     <p className="text-sm text-gray-600">{course.courseCode}</p>
                     <p className="text-sm text-gray-600">{course.credits} credits</p>
-                    <p className="text-sm text-gray-600">Teacher: {course.teacher?.firstName} {course.teacher?.lastName}</p>
                     <button
                       onClick={() => handleUnenrollFromCourse(course._id)}
                       className="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
@@ -304,3 +292,4 @@ const StudentPage = () => {
 };
 
 export default StudentPage;
+

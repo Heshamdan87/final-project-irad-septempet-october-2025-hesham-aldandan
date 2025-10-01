@@ -17,7 +17,7 @@ const AdminLoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Real-time validation
+
   useEffect(() => {
     const newErrors = {};
 
@@ -39,7 +39,7 @@ const AdminLoginPage = () => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -51,7 +51,7 @@ const AdminLoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check for validation errors
+
     if (Object.values(errors).some(error => error)) {
       toast.error('Please fix the form errors before submitting');
       return;
@@ -68,7 +68,7 @@ const AdminLoginPage = () => {
       await login(formData);
       toast.success('Admin login successful!');
       setLoginAttempts(0); // Reset attempts on success
-      navigate('/admin');
+      navigate('/dashboard');
     } catch (error) {
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
@@ -94,7 +94,7 @@ const AdminLoginPage = () => {
       });
       toast.success('Admin login successful!');
       setLoginAttempts(0);
-      navigate('/admin');
+      navigate('/dashboard');
     } catch (error) {
       const newAttempts = loginAttempts + 1;
       setLoginAttempts(newAttempts);
@@ -318,7 +318,7 @@ const AdminLoginPage = () => {
                 to="/login"
                 className="font-semibold text-white hover:text-red-100 transition-colors duration-200 underline"
               >
-                Student/Teacher Login →
+                Student Login →
               </Link>
             </p>
             <p className="text-sm text-red-200">
@@ -354,3 +354,4 @@ const AdminLoginPage = () => {
 };
 
 export default AdminLoginPage;
+

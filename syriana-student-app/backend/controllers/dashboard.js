@@ -2,24 +2,21 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const Grade = require('../models/Grade');
 
-// @desc    Get student dashboard data
-// @route   GET /api/dashboard/student
-// @access  Private (Student only)
+
 exports.getStudentDashboard = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get user's enrolled courses
-    const enrolledCourses = await Course.find({ 'students.student': userId })
-      .select('name code description credits semester year')
-      .populate('teacher', 'firstName lastName');
 
-    // Get user's grades
+    const enrolledCourses = await Course.find({ 'students.student': userId })
+      .select('name code description credits semester year');
+
+
     const grades = await Grade.find({ student: userId })
       .populate('course', 'name code')
       .select('course grade semester year credits');
 
-    // Calculate GPA
+
     let totalCredits = 0;
     let totalPoints = 0;
 
@@ -31,7 +28,7 @@ exports.getStudentDashboard = async (req, res) => {
 
     const gpa = totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : 0;
 
-    // Determine academic standing
+
     const gpaValue = parseFloat(gpa);
     let academicStanding = 'Good Standing';
     if (gpaValue < 2.0) {
@@ -58,73 +55,27 @@ exports.getStudentDashboard = async (req, res) => {
   }
 };
 
-// @desc    Get teacher dashboard data
-// @route   GET /api/dashboard/teacher
-// @access  Private (Teacher only)
-exports.getTeacherDashboard = async (req, res) => {
-  try {
-    const teacherId = req.user._id;
 
-    // Get courses taught by teacher
-    const courses = await Course.find({ teacher: teacherId })
-      .select('name code students semester year');
-
-    // Get total students
-    const totalStudents = new Set();
-    courses.forEach(course => {
-      course.students.forEach(student => {
-        totalStudents.add(student.student.toString());
-      });
-    });
-
-    // Get recent grades submitted (placeholder)
-    const recentGrades = await Grade.find({ course: { $in: courses.map(c => c._id) } })
-      .populate('student', 'firstName lastName')
-      .populate('course', 'name code')
-      .sort({ createdAt: -1 })
-      .limit(10);
-
-    res.json({
-      success: true,
-      data: {
-        myCourses: courses.length,
-        myStudents: totalStudents.size,
-        recentGrades
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message
-    });
-  }
-};
-
-// @desc    Get admin dashboard data
-// @route   GET /api/dashboard/admin
-// @access  Private (Admin only)
 exports.getAdminDashboard = async (req, res) => {
   try {
-    // Get user statistics
-    const totalStudents = await User.countDocuments({ role: 'student' });
-    const totalTeachers = await User.countDocuments({ role: 'teacher' });
-    const totalAdmins = await User.countDocuments({ role: 'admin' });
-    const totalUsers = totalStudents + totalTeachers + totalAdmins;
 
-    // Get course statistics
+    const totalStudents = await User.countDocuments({ role: 'student' });
+    const totalAdmins = await User.countDocuments({ role: 'admin' });
+    const totalUsers = totalStudents + totalAdmins;
+
+
     const totalCourses = await Course.countDocuments();
 
-    // Get grade statistics
+
     const totalGrades = await Grade.countDocuments();
 
-    // Get recent activities (placeholder)
+
     const recentUsers = await User.find()
       .select('firstName lastName email role createdAt')
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Format recent activity data
+
     const recentActivity = recentUsers.map(user => ({
       type: 'user_registration',
       description: `${user.firstName} ${user.lastName} (${user.role}) joined the system`,
@@ -139,7 +90,6 @@ exports.getAdminDashboard = async (req, res) => {
         totalGrades,
         userStats: {
           admins: totalAdmins,
-          teachers: totalTeachers,
           students: totalStudents
         },
         recentActivity
@@ -154,17 +104,14 @@ exports.getAdminDashboard = async (req, res) => {
   }
 };
 
-// @desc    Get dashboard statistics
-// @route   GET /api/dashboard/stats
-// @access  Private
+
 exports.getStats = async (req, res) => {
   try {
     const stats = {
       totalUsers: await User.countDocuments(),
       totalCourses: await Course.countDocuments(),
       totalGrades: await Grade.countDocuments(),
-      activeStudents: await User.countDocuments({ role: 'student' }),
-      activeTeachers: await User.countDocuments({ role: 'teacher' })
+      activeStudents: await User.countDocuments({ role: 'student' })
     };
 
     res.json({
@@ -180,18 +127,16 @@ exports.getStats = async (req, res) => {
   }
 };
 
-// @desc    Get recent activity
-// @route   GET /api/dashboard/activity
-// @access  Private
+
 exports.getRecentActivity = async (req, res) => {
   try {
-    // Get recent user registrations
+
     const recentUsers = await User.find()
       .select('firstName lastName email role createdAt')
       .sort({ createdAt: -1 })
       .limit(10);
 
-    // Get recent grades
+
     const recentGrades = await Grade.find()
       .populate('student', 'firstName lastName')
       .populate('course', 'name code')
@@ -214,12 +159,10 @@ exports.getRecentActivity = async (req, res) => {
   }
 };
 
-// @desc    Get upcoming events
-// @route   GET /api/dashboard/events
-// @access  Private
+
 exports.getUpcomingEvents = async (req, res) => {
   try {
-    // Placeholder for upcoming events
+
     const events = [
       {
         id: 1,
@@ -248,7 +191,7 @@ exports.getUpcomingEvents = async (req, res) => {
   }
 };
 
-// Helper function to convert grade to grade points
+
 const getGradePoint = (grade) => {
   const gradeMap = {
     'A+': 4.0, 'A': 4.0, 'A-': 3.7,
@@ -258,3 +201,6 @@ const getGradePoint = (grade) => {
   };
   return gradeMap[grade] || 0.0;
 };
+
+
+

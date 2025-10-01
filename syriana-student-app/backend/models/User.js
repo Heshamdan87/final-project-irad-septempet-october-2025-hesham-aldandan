@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -33,7 +34,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['student', 'teacher', 'admin'],
+    enum: ['student', 'admin'],
     default: 'student'
   },
   studentId: {
@@ -41,12 +42,6 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true, // Only enforce uniqueness if field is not null
     match: [/^STU\d{6}$/, 'Student ID must be in format STU123456']
-  },
-  teacherId: {
-    type: String,
-    unique: true,
-    sparse: true,
-    match: [/^TCH\d{6}$/, 'Teacher ID must be in format TCH123456']
   },
   phone: {
     type: String,
@@ -62,7 +57,7 @@ const userSchema = new mongoose.Schema({
     zipCode: String,
     country: String
   },
-  // Academic Information
+
   enrollmentDate: {
     type: Date,
     default: Date.now
@@ -132,23 +127,24 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Virtual for full name
+
 userSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`;
 });
 
-// Index for better performance
+
 userSchema.index({ email: 1 });
 userSchema.index({ studentId: 1 });
-userSchema.index({ teacherId: 1 });
 userSchema.index({ role: 1 });
 
-// Pre-save middleware to hash password
+
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
+  if (!this.isModified('password')) {
+    return next();
+  }
+
   try {
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {
@@ -156,16 +152,13 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Pre-save middleware to generate student/teacher ID
+
 userSchema.pre('save', async function(next) {
   if (this.isNew) {
     try {
       if (this.role === 'student' && !this.studentId) {
-        const count = await mongoose.model('User').countDocuments({ role: 'student' });
+        const count = await this.constructor.countDocuments({ role: 'student' });
         this.studentId = `STU${String(count + 1).padStart(6, '0')}`;
-      } else if (this.role === 'teacher' && !this.teacherId) {
-        const count = await mongoose.model('User').countDocuments({ role: 'teacher' });
-        this.teacherId = `TCH${String(count + 1).padStart(6, '0')}`;
       }
     } catch (error) {
       return next(error);
@@ -174,12 +167,12 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
-// Instance method to check password
+
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Instance method to generate JWT token
+
 userSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
     { 
@@ -194,7 +187,7 @@ userSchema.methods.getSignedJwtToken = function() {
   );
 };
 
-// Instance method to generate password reset token
+
 userSchema.methods.getResetPasswordToken = function() {
   const resetToken = crypto.randomBytes(20).toString('hex');
   
@@ -209,3 +202,5 @@ userSchema.methods.getResetPasswordToken = function() {
 };
 
 module.exports = mongoose.model('User', userSchema);
+
+

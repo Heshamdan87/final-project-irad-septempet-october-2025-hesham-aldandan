@@ -2,34 +2,17 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d'
   });
 };
 
-// @desc    Register user
-// @route   POST /api/auth/register
-// @access  Public
 exports.register = async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
-      dateOfBirth,
-      address,
-      major,
-      department,
-      academicYear,
-      grades
-    } = req.body;
+    const userData = req.body;
 
-    // Check if user exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: userData.email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -37,23 +20,11 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Create user (password will be hashed by pre-save middleware)
     const user = await User.create({
-      firstName,
-      lastName,
-      email,
-      password, // Plain password - will be hashed by User model pre-save middleware
-      role: 'student', // Always student for registration
-      phone,
-      dateOfBirth,
-      address,
-      major,
-      department,
-      academicYear,
-      grades: grades || []
+      ...userData,
+      role: 'student'
     });
 
-    // Generate token
     const token = generateToken(user._id);
 
     res.status(201).json({
@@ -83,14 +54,10 @@ exports.register = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({
@@ -99,7 +66,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
@@ -108,7 +74,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Generate token
     const token = generateToken(user._id);
 
     res.json({
@@ -134,9 +99,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// @desc    Logout user
-// @route   POST /api/auth/logout
-// @access  Private
 exports.logout = (req, res) => {
   res.json({
     success: true,
@@ -144,9 +106,6 @@ exports.logout = (req, res) => {
   });
 };
 
-// @desc    Get current user profile
-// @route   GET /api/auth/profile
-// @access  Private
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -160,8 +119,7 @@ exports.getProfile = async (req, res) => {
           lastName: user.lastName,
           email: user.email,
           role: user.role,
-          studentId: user.studentId,
-          teacherId: user.teacherId
+          studentId: user.studentId
         }
       }
     });
@@ -174,9 +132,6 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
 exports.updateProfile = async (req, res) => {
   try {
     const { firstName, lastName } = req.body;
@@ -209,17 +164,12 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-// @desc    Change password
-// @route   PUT /api/auth/change-password
-// @access  Private
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    // Get user with password
     const user = await User.findById(req.user._id).select('+password');
 
-    // Check current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -228,11 +178,9 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password
     user.password = hashedPassword;
     await user.save();
 
@@ -249,35 +197,26 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-// @desc    Forgot password
-// @route   POST /api/auth/forgot-password
-// @access  Public
 exports.forgotPassword = async (req, res) => {
-  // Placeholder implementation
   res.json({
     success: true,
     message: 'Password reset email sent (placeholder)'
   });
 };
 
-// @desc    Reset password
-// @route   PUT /api/auth/reset-password/:token
-// @access  Public
 exports.resetPassword = async (req, res) => {
-  // Placeholder implementation
   res.json({
     success: true,
     message: 'Password reset successfully (placeholder)'
   });
 };
 
-// @desc    Verify email
-// @route   POST /api/auth/verify-email
-// @access  Public
 exports.verifyEmail = async (req, res) => {
-  // Placeholder implementation
   res.json({
     success: true,
     message: 'Email verified successfully (placeholder)'
   });
 };
+
+
+

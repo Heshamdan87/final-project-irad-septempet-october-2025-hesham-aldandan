@@ -1,25 +1,21 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
-// @desc    Create user (Admin only)
-// @route   POST /api/users
-// @access  Private (Admin only)
+
 exports.createUser = async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      role,
-      phone,
-      dateOfBirth,
-      address,
-      major,
-      department,
-      academicYear
-    } = req.body;
+    const { firstName, lastName, email, password, role, phone, dateOfBirth, address, major, department, academicYear } = req.body;
 
-    // Check if user exists
+
+    const allowedRoles = ['student', 'admin'];
+    if (role && !allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Only student and admin roles are allowed.'
+      });
+    }
+
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -28,12 +24,16 @@ exports.createUser = async (req, res) => {
       });
     }
 
-    // Create user
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+
     const user = await User.create({
       firstName,
       lastName,
       email,
-      password,
+      password: hashedPassword,
       role: role || 'student',
       phone,
       dateOfBirth,
@@ -48,108 +48,115 @@ exports.createUser = async (req, res) => {
       data: user
     });
   } catch (error) {
+    console.error('Error creating user:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Server error creating user'
     });
   }
 };
 
-// @desc    Get all students
-// @route   GET /api/users
-// @access  Private (Admin only)
+
 exports.getStudents = async (req, res) => {
   try {
-    const students = await User.find({ role: 'student' }).select('-password');
-    res.status(200).json({
+    const { role, ...otherParams } = req.query;
+
+    const filter = role ? { role } : {};
+
+    const students = await User.find(filter).select('-password');
+    res.json({
       success: true,
       count: students.length,
       data: students
     });
   } catch (error) {
+    console.error('Error fetching students:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Error fetching students'
     });
   }
 };
 
-// @desc    Get single student
-// @route   GET /api/users/:id
-// @access  Private (Admin only)
+
 exports.getStudent = async (req, res) => {
   try {
     const student = await User.findById(req.params.id).select('-password');
-    if (!student || student.role !== 'student') {
+    if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found'
+        message: 'User not found'
       });
     }
-    res.status(200).json({
+    res.json({
       success: true,
       data: student
     });
   } catch (error) {
+    console.error('Error fetching student:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Error fetching student'
     });
   }
 };
 
-// @desc    Update student
-// @route   PUT /api/users/:id
-// @access  Private (Admin only)
+
 exports.updateStudent = async (req, res) => {
   try {
-    const { firstName, lastName, email, studentId } = req.body;
+    const updates = req.body;
     const student = await User.findById(req.params.id);
-    if (!student || student.role !== 'student') {
+
+    if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found'
+        message: 'User not found'
       });
     }
-    student.firstName = firstName || student.firstName;
-    student.lastName = lastName || student.lastName;
-    student.email = email || student.email;
-    student.studentId = studentId || student.studentId;
+
+
+    Object.keys(updates).forEach(key => {
+      if (updates[key] !== undefined) {
+        student[key] = updates[key];
+      }
+    });
+
     await student.save();
-    res.status(200).json({
+    res.json({
       success: true,
       data: student
     });
   } catch (error) {
+    console.error('Error updating student:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Error updating student'
     });
   }
 };
 
-// @desc    Delete student
-// @route   DELETE /api/users/:id
-// @access  Private (Admin only)
+
 exports.deleteStudent = async (req, res) => {
   try {
     const student = await User.findByIdAndDelete(req.params.id);
-    if (!student || student.role !== 'student') {
+    if (!student) {
       return res.status(404).json({
         success: false,
-        message: 'Student not found'
+        message: 'User not found'
       });
     }
-    res.status(200).json({
+    res.json({
       success: true,
-      message: 'Student deleted'
+      message: 'User deleted successfully'
     });
   } catch (error) {
+    console.error('Error deleting student:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Error deleting student'
     });
   }
 };
+
+
+

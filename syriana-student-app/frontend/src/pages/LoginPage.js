@@ -19,16 +19,16 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get role from URL params or default to student
+
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const roleParam = urlParams.get('role');
-    if (roleParam && ['student', 'teacher', 'admin'].includes(roleParam)) {
+    if (roleParam && ['student', 'admin'].includes(roleParam)) {
       setFormData(prev => ({ ...prev, role: roleParam }));
     }
   }, [location]);
 
-  // Real-time validation
+
   useEffect(() => {
     const newErrors = {};
 
@@ -50,7 +50,7 @@ const LoginPage = () => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -66,7 +66,6 @@ const LoginPage = () => {
   const getRoleDisplayName = (role) => {
     switch (role) {
       case 'student': return 'Student';
-      case 'teacher': return 'Teacher';
       case 'admin': return 'Administrator';
       default: return 'User';
     }
@@ -78,12 +77,6 @@ const LoginPage = () => {
         return (
           <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        );
-      case 'teacher':
-        return (
-          <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         );
       case 'admin':
@@ -100,7 +93,6 @@ const LoginPage = () => {
   const getRoleColor = (role) => {
     switch (role) {
       case 'student': return 'emerald';
-      case 'teacher': return 'blue';
       case 'admin': return 'red';
       default: return 'gray';
     }
@@ -109,7 +101,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate form
+
     if (Object.keys(errors).length > 0) {
       toast.error('Please fix the form errors before submitting');
       return;
@@ -128,13 +120,10 @@ const LoginPage = () => {
 
       toast.success(`${getRoleDisplayName(formData.role)} login successful!`);
 
-      // Navigate based on role
+
       switch (formData.role) {
         case 'admin':
           navigate('/admin');
-          break;
-        case 'teacher':
-          navigate('/teacher');
           break;
         case 'student':
         default:
@@ -162,20 +151,16 @@ const LoginPage = () => {
     try {
       const demoCredentials = {
         student: { email: 'student@syriana.edu', password: 'student123' },
-        teacher: { email: 'teacher@syriana.edu', password: 'teacher123' },
         admin: { email: 'admin@syriana.edu', password: 'admin123' }
       };
 
       await login(demoCredentials[role]);
       toast.success(`${getRoleDisplayName(role)} demo login successful!`);
 
-      // Navigate based on role
+
       switch (role) {
         case 'admin':
           navigate('/admin');
-          break;
-        case 'teacher':
-          navigate('/teacher');
           break;
         case 'student':
         default:
@@ -235,7 +220,7 @@ const LoginPage = () => {
               I am logging in as:
             </label>
             <div className="grid grid-cols-3 gap-3">
-              {['student', 'teacher', 'admin'].map((role) => (
+              {['student', 'admin'].map((role) => (
                 <button
                   key={role}
                   type="button"
@@ -425,3 +410,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+

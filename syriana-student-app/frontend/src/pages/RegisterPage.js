@@ -25,12 +25,7 @@ const RegisterPage = () => {
     dateOfBirth: '',
     gender: '',
     grades: [],
-    // Teacher-specific fields
-    specialization: '',
-    experience: '',
-    qualifications: '',
-    officeHours: '',
-    // Admin-specific fields
+
     adminLevel: '',
     permissions: []
   });
@@ -53,7 +48,7 @@ const RegisterPage = () => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -96,15 +91,11 @@ const RegisterPage = () => {
     setFormData(prev => ({
       ...prev,
       role,
-      // Reset role-specific fields when changing role
+
       major: role === 'student' ? prev.major : '',
-      department: role === 'student' || role === 'teacher' ? prev.department : '',
+      department: role === 'student' ? prev.department : '',
       academicYear: role === 'student' ? prev.academicYear : '',
       studentId: role === 'student' ? prev.studentId : '',
-      specialization: role === 'teacher' ? prev.specialization : '',
-      experience: role === 'teacher' ? prev.experience : '',
-      qualifications: role === 'teacher' ? prev.qualifications : '',
-      officeHours: role === 'teacher' ? prev.officeHours : '',
       adminLevel: role === 'admin' ? prev.adminLevel : '',
       permissions: role === 'admin' ? prev.permissions : []
     }));
@@ -192,7 +183,7 @@ const RegisterPage = () => {
         break;
 
       case 'department':
-        if ((formData.role === 'student' || formData.role === 'teacher') && !formData.department.trim()) {
+        if (formData.role === 'student' && !formData.department.trim()) {
           newErrors.department = 'Department is required';
         } else {
           delete newErrors.department;
@@ -204,22 +195,6 @@ const RegisterPage = () => {
           newErrors.academicYear = 'Academic year is required';
         } else {
           delete newErrors.academicYear;
-        }
-        break;
-
-      case 'specialization':
-        if (formData.role === 'teacher' && !formData.specialization.trim()) {
-          newErrors.specialization = 'Specialization is required';
-        } else {
-          delete newErrors.specialization;
-        }
-        break;
-
-      case 'experience':
-        if (formData.role === 'teacher' && !formData.experience.trim()) {
-          newErrors.experience = 'Experience is required';
-        } else {
-          delete newErrors.experience;
         }
         break;
 
@@ -256,10 +231,6 @@ const RegisterPage = () => {
         if (!formData.major.trim()) newErrors.major = 'Major is required';
         if (!formData.department.trim()) newErrors.department = 'Department is required';
         if (!formData.academicYear) newErrors.academicYear = 'Academic year is required';
-      } else if (formData.role === 'teacher') {
-        if (!formData.department.trim()) newErrors.department = 'Department is required';
-        if (!formData.specialization.trim()) newErrors.specialization = 'Specialization is required';
-        if (!formData.experience.trim()) newErrors.experience = 'Experience is required';
       }
     }
 
@@ -291,7 +262,9 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      const result = await register(formData);
+
+      const { confirmPassword, ...userData } = formData;
+      const result = await register(userData);
       if (result.success) {
         toast.success('Registration successful! Welcome to Syriana.');
         navigate('/dashboard');
@@ -309,7 +282,6 @@ const RegisterPage = () => {
   const getRoleDisplayName = (role) => {
     switch (role) {
       case 'student': return 'Student';
-      case 'teacher': return 'Teacher';
       case 'admin': return 'Administrator';
       default: return 'User';
     }
@@ -321,12 +293,6 @@ const RegisterPage = () => {
         return (
           <svg className="h-8 w-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        );
-      case 'teacher':
-        return (
-          <svg className="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
         );
       case 'admin':
@@ -343,7 +309,6 @@ const RegisterPage = () => {
   const getRoleColor = (role) => {
     switch (role) {
       case 'student': return 'emerald';
-      case 'teacher': return 'blue';
       case 'admin': return 'red';
       default: return 'gray';
     }
@@ -396,7 +361,7 @@ const RegisterPage = () => {
               I am registering as:
             </label>
             <div className="grid grid-cols-3 gap-4">
-              {['student', 'teacher', 'admin'].map((role) => (
+              {['student', 'admin'].map((role) => (
                 <button
                   key={role}
                   type="button"
@@ -611,12 +576,10 @@ const RegisterPage = () => {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {formData.role === 'student' ? 'Academic Information' : formData.role === 'teacher' ? 'Professional Information' : 'Administrative Setup'}
+            {formData.role === 'student' ? 'Academic Information' : 'Administrative Setup'}
           </h2>
           <p className="text-lg text-gray-600">
-            {formData.role === 'student' ? 'Tell us about your academic background' :
-             formData.role === 'teacher' ? 'Share your teaching credentials' :
-             'Configure your administrative access'}
+            {formData.role === 'student' ? 'Tell us about your academic background' : 'Configure your administrative access'}
           </p>
         </div>
 
@@ -723,111 +686,6 @@ const RegisterPage = () => {
                     onChange={handleChange}
                   />
                 </div>
-              </div>
-            </div>
-          )}
-
-          {formData.role === 'teacher' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="department" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Department
-                  </label>
-                  <input
-                    id="department"
-                    name="department"
-                    type="text"
-                    className={`w-full px-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-${color}-500 focus:border-transparent transition-all duration-200 border-gray-300`}
-                    placeholder="e.g., Faculty of Engineering"
-                    value={formData.department}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="specialization" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Specialization
-                  </label>
-                  <input
-                    id="specialization"
-                    name="specialization"
-                    type="text"
-                    className={`w-full px-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-${color}-500 focus:border-transparent transition-all duration-200 ${
-                      errors.specialization && touched.specialization ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., Machine Learning"
-                    value={formData.specialization}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('specialization')}
-                  />
-                  {errors.specialization && touched.specialization && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center">
-                      <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.specialization}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="experience" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Years of Experience
-                  </label>
-                  <input
-                    id="experience"
-                    name="experience"
-                    type="text"
-                    className={`w-full px-4 py-3 border rounded-xl shadow-sm focus:ring-2 focus:ring-${color}-500 focus:border-transparent transition-all duration-200 ${
-                      errors.experience && touched.experience ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., 5 years"
-                    value={formData.experience}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('experience')}
-                  />
-                  {errors.experience && touched.experience && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center">
-                      <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      {errors.experience}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="qualifications" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Qualifications
-                  </label>
-                  <input
-                    id="qualifications"
-                    name="qualifications"
-                    type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="e.g., PhD in Computer Science"
-                    value={formData.qualifications}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="officeHours" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Office Hours
-                </label>
-                <input
-                  id="officeHours"
-                  name="officeHours"
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="e.g., Mon-Fri 2-4 PM"
-                  value={formData.officeHours}
-                  onChange={handleChange}
-                />
               </div>
             </div>
           )}
@@ -1192,18 +1050,6 @@ const RegisterPage = () => {
                     </div>
                   </>
                 )}
-                {formData.role === 'teacher' && (
-                  <>
-                    <div>
-                      <span className="font-medium text-gray-700">Department:</span>
-                      <span className="ml-2 text-gray-900">{formData.department}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700">Specialization:</span>
-                      <span className="ml-2 text-gray-900">{formData.specialization}</span>
-                    </div>
-                  </>
-                )}
                 {formData.role === 'admin' && (
                   <>
                     <div>
@@ -1320,3 +1166,4 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
+

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 const AdminPage = () => {
   const { logout } = useAuth();
@@ -89,7 +90,7 @@ const AdminPage = () => {
   const handleRegisterStudent = async (e) => {
     e.preventDefault();
 
-    // Validation
+
     if (registerFormData.password !== registerFormData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
@@ -168,6 +169,30 @@ const AdminPage = () => {
             >
               Logout
             </button>
+          </div>
+
+          {/* Navigation */}
+          <div className="mb-6">
+            <nav className="flex space-x-4">
+              <Link
+                to="/admin"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
+              >
+                Students Management
+              </Link>
+              <Link
+                to="/students"
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium"
+              >
+                View All Students
+              </Link>
+              <Link
+                to="/courses"
+                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-sm font-medium"
+              >
+                View Courses
+              </Link>
+            </nav>
           </div>
 
           <div className="mb-6">
@@ -287,7 +312,6 @@ const AdminPage = () => {
                       required
                     >
                       <option value="student">Student</option>
-                      <option value="teacher">Teacher</option>
                     </select>
                   </div>
                   <div>
@@ -512,3 +536,4 @@ const AdminPage = () => {
 };
 
 export default AdminPage;
+

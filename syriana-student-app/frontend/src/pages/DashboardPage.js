@@ -1,10 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { BarChart3, BookOpen, Calendar, Users, TrendingUp, Clock, LogOut, Star, Award, Target } from 'lucide-react';
+import { BarChart3, BookOpen, Calendar, Users, TrendingUp, Clock, LogOut, Star, Award, Target, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { userService } from '../services/api';
+import toast from 'react-hot-toast';
+
 
 const DashboardPage = () => {
+
   const { user, logout } = useAuth();
 
+
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
+
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    studentId: '',
+    major: '',
+    department: '',
+    academicYear: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchStudents();
+    }
+  }, [user]);
+
+  
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const response = await userService.getStudents();
+      setStudents(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      toast.error('Failed to load students');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
   const handleLogout = async () => {
     try {
       await logout();
@@ -12,6 +58,103 @@ const DashboardPage = () => {
       console.error('Logout error:', error);
     }
   };
+
+  
+  const handleAddStudent = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await userService.createUser({
+        ...formData,
+        role: 'student'
+      });
+      toast.success('Student added successfully');
+      setShowAddForm(false);
+      resetForm();
+      fetchStudents(); // Refresh the list
+    } catch (error) {
+      console.error('Error adding student:', error);
+      toast.error('Failed to add student');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const handleEditStudent = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await userService.updateUser(editingStudent._id, formData);
+      toast.success('Student updated successfully');
+      setEditingStudent(null);
+      resetForm();
+      fetchStudents(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating student:', error);
+      toast.error('Failed to update student');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const handleDeleteStudent = async (studentId) => {
+    if (!window.confirm('Are you sure you want to delete this student?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await userService.deleteUser(studentId);
+      toast.success('Student deleted successfully');
+      fetchStudents(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting student:', error);
+      toast.error('Failed to delete student');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const startEdit = (student) => {
+    setEditingStudent(student);
+    setFormData({
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: student.email,
+      studentId: student.studentId || '',
+      major: student.major || '',
+      department: student.department || '',
+      academicYear: student.academicYear || '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
+  
+  const resetForm = () => {
+    setShowAddForm(false);
+    setEditingStudent(null);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      studentId: '',
+      major: '',
+      department: '',
+      academicYear: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
 
   const stats = [
     {
@@ -44,6 +187,7 @@ const DashboardPage = () => {
     }
   ];
 
+
   const recentCourses = [
     {
       name: 'Mathematics 101',
@@ -67,6 +211,7 @@ const DashboardPage = () => {
       grade: 'B+'
     }
   ];
+
 
   const upcomingAssignments = [
     {
@@ -99,6 +244,7 @@ const DashboardPage = () => {
     }
   ];
 
+
   const achievements = [
     {
       title: 'Dean\'s List',
@@ -122,16 +268,19 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header Section */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
+            {/* Page Title and Welcome Message */}
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Welcome back, {user?.firstName || 'Student'}! Let's continue your learning journey.
               </p>
             </div>
+
+            {/* User Info and Logout */}
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
@@ -149,13 +298,79 @@ const DashboardPage = () => {
               </button>
             </div>
           </div>
+
+          {/* Navigation Menu - Role-based links */}
+          <div className="mt-4 mb-6">
+            <nav className="flex flex-wrap gap-3">
+              <Link
+                to="/dashboard"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/courses"
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium"
+              >
+                Courses
+              </Link>
+              {/* Admin-only navigation links */}
+              {user?.role === 'admin' && (
+                <>
+                  <Link
+                    to="/admin"
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-sm font-medium"
+                  >
+                    Admin Panel
+                  </Link>
+                  <Link
+                    to="/admin"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 text-sm font-medium"
+                  >
+                    Add Student
+                  </Link>
+                  <Link
+                    to="/students"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
+                  >
+                    View Students
+                  </Link>
+                  <Link
+                    to="/admin"
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium"
+                  >
+                    Edit Students
+                  </Link>
+                  <button
+                    onClick={() => setShowAddForm(true)}
+                    className="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 text-sm font-medium"
+                  >
+                    Register Student
+                  </button>
+                  <button
+                    onClick={() => {
+
+                      const element = document.getElementById('student-management');
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                        element.focus({ preventScroll: true });
+                      }
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-sm font-medium"
+                  >
+                    Edit Data
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {/* Stats Grid */}
+          {/* Statistics Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => {
               const IconComponent = stat.icon;
@@ -175,18 +390,21 @@ const DashboardPage = () => {
             })}
           </div>
 
-          {/* Main Content Grid */}
+          {/* Main Dashboard Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* Recent Courses */}
+            {/* Recent Courses Section */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <BookOpen className="h-5 w-5 text-blue-600 mr-2" />
                   <h2 className="text-lg font-semibold text-gray-900">Recent Courses</h2>
                 </div>
-                <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                <Link
+                  to="/courses"
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
                   View All Courses
-                </button>
+                </Link>
               </div>
               <div className="space-y-4">
                 {recentCourses.map((course, index) => (
@@ -216,9 +434,9 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* User Profile & Performance */}
+            {/* User Profile & Performance Sidebar */}
             <div className="space-y-6">
-              {/* User Info */}
+              {/* User Profile Information */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center mb-4">
                   <div className="bg-indigo-100 rounded-lg p-3 mr-3">
@@ -246,7 +464,7 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* Performance Chart */}
+              {/* Performance Metrics */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center mb-4">
                   <div className="bg-green-100 rounded-lg p-3 mr-3">
@@ -286,6 +504,193 @@ const DashboardPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Admin-only Student Management Section */}
+          {user?.role === 'admin' && (
+            <div id="student-management" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Users className="h-5 w-5 text-indigo-600 mr-2" />
+                  <h2 className="text-lg font-semibold text-gray-900">Student Management</h2>
+                </div>
+                <button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  {showAddForm ? 'Cancel' : 'Add Student'}
+                </button>
+              </div>
+
+              {/* Add/Edit Student Form */}
+              {(showAddForm || editingStudent) && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+                  <h3 className="text-md font-medium text-gray-900 mb-4">
+                    {editingStudent ? 'Edit Student' : 'Add New Student'}
+                  </h3>
+                  <form onSubmit={editingStudent ? handleEditStudent : handleAddStudent} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Form fields for student information */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                      <input
+                        type="text"
+                        value={formData.studentId}
+                        onChange={(e) => setFormData({...formData, studentId: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Major</label>
+                      <input
+                        type="text"
+                        value={formData.major}
+                        onChange={(e) => setFormData({...formData, major: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                      <input
+                        type="text"
+                        value={formData.department}
+                        onChange={(e) => setFormData({...formData, department: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                      <input
+                        type="text"
+                        value={formData.academicYear}
+                        onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    {!editingStudent && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                          <input
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) => setFormData({...formData, password: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required={!editingStudent}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                          <input
+                            type="password"
+                            value={formData.confirmPassword}
+                            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required={!editingStudent}
+                          />
+                        </div>
+                      </>
+                    )}
+                    <div className="md:col-span-2 flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-4 py-2 rounded-md text-sm font-medium"
+                      >
+                        {loading ? 'Saving...' : (editingStudent ? 'Update Student' : 'Add Student')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetForm}
+                        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Students List */}
+              <div className="space-y-3">
+                {loading ? (
+                  <div className="text-center py-4">Loading students...</div>
+                ) : students.length === 0 ? (
+                  <div className="text-center py-4 text-gray-500">No students found</div>
+                ) : (
+                  students.slice(0, 5).map((student) => (
+                    <div key={student._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center">
+                        <div className="bg-indigo-100 rounded-full p-2 mr-3">
+                          <Users className="h-4 w-4 text-indigo-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900">{student.firstName} {student.lastName}</h4>
+                          <p className="text-sm text-gray-500">{student.email}</p>
+                          {student.studentId && <p className="text-xs text-gray-400">ID: {student.studentId}</p>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(student)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium flex items-center gap-1"
+                        >
+                          <Edit className="h-3 w-3" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteStudent(student._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {students.length > 5 && (
+                  <div className="text-center pt-2">
+                    <Link
+                      to="/students"
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                    >
+                      View all {students.length} students
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Bottom Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -387,3 +792,5 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
+
+

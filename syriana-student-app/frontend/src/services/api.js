@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Create axios instance
+
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
   timeout: 10000,
@@ -9,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,17 +23,15 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle errors
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 errors (unauthorized)
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
     
-    // Handle network errors
     if (!error.response) {
       error.message = 'Network error. Please check your internet connection.';
     }
@@ -42,7 +40,7 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API endpoints
+
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
@@ -55,20 +53,20 @@ export const authService = {
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
 };
 
-// User API endpoints
+
 export const userService = {
   getAllUsers: (params) => api.get('/users', { params }),
   getUserById: (id) => api.get(`/users/${id}`),
+  createUser: (userData) => api.post('/users', userData),
   updateUser: (id, userData) => api.put(`/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/users/${id}`),
-  getStudents: (params) => api.get('/users/students', { params }),
-  getTeachers: (params) => api.get('/users/teachers', { params }),
+  getStudents: (params) => api.get('/users', { params: { ...params, role: 'student' } }),
   uploadAvatar: (formData) => api.post('/users/avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
 };
 
-// Course API endpoints
+
 export const courseService = {
   getAllCourses: (params) => api.get('/courses', { params }),
   getCourseById: (id) => api.get(`/courses/${id}`),
@@ -85,7 +83,7 @@ export const courseService = {
   }),
 };
 
-// Grade API endpoints
+
 export const gradeService = {
   getGrades: (params) => api.get('/grades', { params }),
   getGradeById: (id) => api.get(`/grades/${id}`),
@@ -102,17 +100,16 @@ export const gradeService = {
   }),
 };
 
-// Dashboard API endpoints
+
 export const dashboardService = {
   getStudentDashboard: () => api.get('/dashboard/student'),
-  getTeacherDashboard: () => api.get('/dashboard/teacher'),
   getAdminDashboard: () => api.get('/dashboard/admin'),
   getStats: () => api.get('/dashboard/stats'),
   getRecentActivity: () => api.get('/dashboard/activity'),
   getUpcomingEvents: () => api.get('/dashboard/events'),
 };
 
-// Notification API endpoints
+
 export const notificationService = {
   getNotifications: (params) => api.get('/notifications', { params }),
   markAsRead: (notificationId) => api.put(`/notifications/${notificationId}/read`),
@@ -121,7 +118,7 @@ export const notificationService = {
   getUnreadCount: () => api.get('/notifications/unread-count'),
 };
 
-// File upload helper
+
 export const uploadFile = async (endpoint, file, onProgress) => {
   const formData = new FormData();
   formData.append('file', file);
@@ -141,10 +138,10 @@ export const uploadFile = async (endpoint, file, onProgress) => {
   });
 };
 
-// Helper function to handle API errors
+
 export const handleApiError = (error) => {
   if (error.response) {
-    // Server responded with error status
+
     const { status, data } = error.response;
     
     switch (status) {
@@ -164,12 +161,13 @@ export const handleApiError = (error) => {
         return data.message || `Error ${status}: Something went wrong.`;
     }
   } else if (error.request) {
-    // Network error
+
     return 'Network error. Please check your internet connection.';
   } else {
-    // Other error
+
     return error.message || 'An unexpected error occurred.';
   }
 };
 
 export default api;
+

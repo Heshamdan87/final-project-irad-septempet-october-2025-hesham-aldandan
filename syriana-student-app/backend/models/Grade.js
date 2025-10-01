@@ -56,10 +56,10 @@ const gradeSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Compound index to ensure unique grade per student per course per semester/year
+
 gradeSchema.index({ student: 1, course: 1, semester: 1, year: 1 }, { unique: true });
 
-// Pre-save middleware to calculate grade point
+
 gradeSchema.pre('save', function(next) {
   const gradePoints = {
     'A+': 4.0, 'A': 4.0, 'A-': 3.7,
@@ -73,7 +73,7 @@ gradeSchema.pre('save', function(next) {
   next();
 });
 
-// Static method to calculate GPA for a student
+
 gradeSchema.statics.calculateGPA = async function(studentId) {
   const grades = await this.find({ student: studentId });
   if (grades.length === 0) return 0;
@@ -90,3 +90,5 @@ gradeSchema.statics.calculateGPA = async function(studentId) {
 };
 
 module.exports = mongoose.model('Grade', gradeSchema);
+
+

@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   GraduationCap,
-  UserCheck,
   PieChart,
   Clock,
   Globe,
@@ -40,7 +39,7 @@ const HomePage = () => {
     {
       icon: Users,
       title: "User Management",
-      description: "Role-based access for students, teachers, and administrators with detailed profiles."
+      description: "Role-based access for students and administrators with detailed profiles."
     },
     {
       icon: Award,
@@ -50,7 +49,7 @@ const HomePage = () => {
     {
       icon: BarChart3,
       title: "Analytics Dashboard",
-      description: "Detailed insights and reports for students, teachers, and administrators."
+      description: "Detailed insights and reports for students and administrators."
     },
     {
       icon: Calendar,
@@ -66,7 +65,6 @@ const HomePage = () => {
 
   const stats = [
     { number: "10,000+", label: "Active Students", icon: GraduationCap },
-    { number: "500+", label: "Expert Teachers", icon: UserCheck },
     { number: "200+", label: "Courses Available", icon: BookOpen },
     { number: "95%", label: "Success Rate", icon: PieChart }
   ];
@@ -109,23 +107,10 @@ const HomePage = () => {
       recommended: false
     },
     {
-      name: "Teacher",
-      price: "$29/month",
-      features: [
-        "Everything in Student",
-        "Course creation",
-        "Grade management",
-        "Advanced analytics",
-        "Communication tools",
-        "File sharing"
-      ],
-      recommended: true
-    },
-    {
       name: "Institution",
       price: "Custom",
       features: [
-        "Everything in Teacher",
+        "Everything in Student",
         "Unlimited users",
         "Custom branding",
         "Advanced reporting",
@@ -249,7 +234,7 @@ const HomePage = () => {
                 <span className="text-blue-600 block">Student Management</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Streamline your educational journey with our comprehensive platform designed for students, teachers, and administrators. Experience seamless course management, grade tracking, and communication.
+                Streamline your educational journey with our comprehensive platform designed for students and administrators. Experience seamless course management, grade tracking, and communication.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <button 
@@ -413,7 +398,7 @@ const HomePage = () => {
                 Empowering Education Through Technology
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Syriana Student App is designed to bridge the gap between traditional education and modern technology. Our platform provides a seamless experience for students, teachers, and administrators.
+                Syriana Student App is designed to bridge the gap between traditional education and modern technology. Our platform provides a seamless experience for students and administrators.
               </p>
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
@@ -431,7 +416,7 @@ const HomePage = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Real-time Collaboration</h4>
-                    <p className="text-gray-600">Connect students and teachers in a dynamic learning environment.</p>
+                    <p className="text-gray-600">Connect students and administrators in a dynamic learning environment.</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -834,3 +819,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

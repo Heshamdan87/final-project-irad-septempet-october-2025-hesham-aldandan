@@ -16,7 +16,7 @@ const StudentLoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Real-time validation
+
   useEffect(() => {
     const newErrors = {};
 
@@ -38,7 +38,7 @@ const StudentLoginPage = () => {
       [name]: value
     }));
 
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -50,7 +50,7 @@ const StudentLoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check for validation errors
+
     if (Object.values(errors).some(error => error)) {
       toast.error('Please fix the form errors before submitting');
       return;
@@ -75,18 +75,16 @@ const StudentLoginPage = () => {
     }
   };
 
-  const handleDemoLogin = async (type) => {
+  const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
-      const credentials = type === 'student'
-        ? { email: 'student@syriana.edu', password: 'student123' }
-        : { email: 'teacher@syriana.edu', password: 'teacher123' };
+      const credentials = { email: 'student@syriana.edu', password: 'student123' };
 
       await login(credentials);
-      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} login successful!`);
+      toast.success('Student login successful!');
       navigate('/');
     } catch (error) {
-      const errorMessage = error.response?.data?.message || `${type} login failed`;
+      const errorMessage = error.response?.data?.message || 'Student login failed';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -123,7 +121,7 @@ const StudentLoginPage = () => {
             Welcome Back
           </h2>
           <p className="mt-2 text-lg text-gray-600">
-            Student & Teacher Portal
+            Student Portal
           </p>
         </div>
 
@@ -279,7 +277,7 @@ const StudentLoginPage = () => {
 
               <button
                 type="button"
-                onClick={() => handleDemoLogin('teacher')}
+                onClick={handleDemoLogin}
                 disabled={isLoading}
                 className="group relative flex flex-col items-center justify-center py-4 px-4 border-2 border-teal-200 text-sm font-semibold rounded-xl text-teal-700 bg-teal-50 hover:bg-teal-100 hover:border-teal-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] transition-all duration-200"
               >
@@ -288,9 +286,9 @@ const StudentLoginPage = () => {
                 ) : (
                   <>
                     <svg className="h-6 w-6 mb-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span>Teacher</span>
+                    <span>Student</span>
                     <span className="text-xs text-teal-600 mt-1">Demo</span>
                   </>
                 )}
@@ -326,3 +324,4 @@ const StudentLoginPage = () => {
 };
 
 export default StudentLoginPage;
+
