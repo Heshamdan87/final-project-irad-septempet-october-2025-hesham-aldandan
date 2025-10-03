@@ -16,8 +16,15 @@ This setup includes:
 
 ### Step 1: Push Workflow Files
 ```bash
-cd "c:\Users\hesha\Desktop\New folder (3)\final-project-irad-septempet-october-2025-hesham-aldandan"
-git add .github/ DEPLOYMENT_GUIDE.md syriana-student-app/backend/.env.example syriana-student-app/frontend/.env.example syriana-student-app/backend/Procfile syriana-student-app/backend/Dockerfile syriana-student-app/frontend/Dockerfile syriana-student-app/frontend/nginx.conf
+# Navigate to your project root
+cd your-project-directory
+
+# Add all deployment files
+git add .github/ DEPLOYMENT_GUIDE.md DEPLOYMENT_SUMMARY.md QUICK_START.md
+git add syriana-student-app/backend/.env.example syriana-student-app/backend/Procfile syriana-student-app/backend/Dockerfile
+git add syriana-student-app/frontend/.env.example syriana-student-app/frontend/Dockerfile syriana-student-app/frontend/nginx.conf
+
+# Commit and push
 git commit -m "feat: add GitHub Actions CI/CD workflows and deployment configuration"
 git push origin main
 ```
@@ -42,7 +49,7 @@ Copy the output - this is your JWT_SECRET
 
 ### Step 4: Add GitHub Secrets
 
-1. Go to your repo: `https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan`
+1. Go to your GitHub repository
 2. Click **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
 4. Add these 2 required secrets:
@@ -182,8 +189,9 @@ docker-compose down
 ## ✅ Verify Everything Works
 
 ### 1. Check GitHub Actions
-```
-Go to: https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions
+
+```text
+Go to: Your GitHub Repository → Actions tab
 
 Should see: ✅ CI/CD Pipeline passing
 ```
@@ -211,8 +219,9 @@ Or: https://your-app.vercel.app (deployed)
 ## 📊 Monitor Your Deployments
 
 ### GitHub Actions Dashboard
-```
-https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions
+
+```text
+Your GitHub Repository → Actions tab
 ```
 
 ### View Logs
@@ -392,4 +401,4 @@ Your project now has:
 
 ---
 
-**Made with ❤️ by Hesham Al Dandan**
+*Documentation for Syriana Student Management System*

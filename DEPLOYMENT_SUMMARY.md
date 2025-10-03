@@ -87,7 +87,10 @@
 
 - [ ] **1. Push files to GitHub**
   ```bash
-  cd "c:\Users\hesha\Desktop\New folder (3)\final-project-irad-septempet-october-2025-hesham-aldandan"
+  # Navigate to your project root
+  cd your-project-directory
+  
+  # Add all changes
   git add .
   git commit -m "feat: add GitHub Actions CI/CD workflows and deployment configuration"
   git push origin main
@@ -165,14 +168,16 @@ RAILWAY_TOKEN=<from: railway whoami --token>
 ## 🔍 How to Verify Setup
 
 ### 1. Check Workflows Are Active
-```
-URL: https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions
+
+```text
+URL: Your GitHub Repository → Actions tab
 Expected: "CI/CD Pipeline" workflow running
 ```
 
 ### 2. Check Secrets Are Configured
-```
-URL: https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/settings/secrets/actions
+
+```text
+URL: Your GitHub Repository → Settings → Secrets and variables → Actions
 Expected: At least JWT_SECRET and MONGODB_URI visible
 ```
 
@@ -388,6 +393,5 @@ You now have a **production-ready** CI/CD pipeline with:
 
 ---
 
-**Last Updated:** $(date)
-**Created By:** Hesham Al Dandan
 **Version:** 1.0.0
+*Syriana Student Management System*

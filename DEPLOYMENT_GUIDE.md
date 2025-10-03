@@ -286,9 +286,17 @@ npm run test:ci
 Add these badges to your README.md:
 
 ```markdown
-[![CI/CD Pipeline](https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions/workflows/ci-cd.yml)
+## 🎖️ GitHub Actions Badges
 
-[![Deploy to Heroku](https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions/workflows/deploy-heroku.yml/badge.svg)](https://github.com/Heshamdan87/final-project-irad-septempet-october-2025-hesham-aldandan/actions/workflows/deploy-heroku.yml)
+Add these badges to your README.md:
+
+```markdown
+[![CI/CD Pipeline](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci-cd.yml)
+
+[![Deploy to Heroku](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy-heroku.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy-heroku.yml)
+```
+
+Replace `YOUR_USERNAME` and `YOUR_REPO` with your GitHub username and repository name.
 ```
 
 ---
