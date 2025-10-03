@@ -2,6 +2,7 @@
   "name": "syriana-student-app-client",
   "version": "1.0.0",
   "description": "Frontend for Syriana Student Management System",
+  "homepage": "https://heshamdan87.github.io/final-project-irad-septempet-october-2025-hesham-aldandan",
   "private": true,
   "dependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
@@ -32,7 +33,9 @@
     "test:ci": "react-scripts test --ci --coverage --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "test:watch": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "jest": {
     "transformIgnorePatterns": [
@@ -65,6 +68,7 @@
     "eslint": "^8.48.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.29",
     "prettier": "^3.0.3",
     "tailwindcss": "^3.3.3"
