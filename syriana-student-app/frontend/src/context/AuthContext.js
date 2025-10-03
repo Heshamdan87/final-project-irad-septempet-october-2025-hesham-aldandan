@@ -169,6 +169,59 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Enhanced Admin Login with Security Features
+  const adminLogin = useCallback(async (credentials) => {
+    try {
+      dispatch({ type: AUTH_ACTIONS.LOGIN_START });
+      const response = await authService.adminLogin(credentials);
+      
+      // Check if two-factor authentication is required
+      if (response.data.requiresTwoFactor) {
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN_FAILURE,
+          payload: 'Two-factor authentication required',
+        });
+        return {
+          requires2FA: true,
+          tempToken: response.data.tempToken,
+          message: response.data.message
+        };
+      }
+
+      // Successful login - extract token and user from response
+      const { token, user, sessionInfo } = response.data.data;
+      
+      // Dispatch LOGIN_SUCCESS with correct payload structure
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_SUCCESS,
+        payload: {
+          token,
+          user
+        },
+      });
+      
+      return {
+        success: true,
+        user,
+        token,
+        sessionInfo
+      };
+    } catch (error) {
+      // Handle specific error status codes
+      const errorMessage = error.response?.data?.message || 'Admin login failed';
+      
+      dispatch({
+        type: AUTH_ACTIONS.LOGIN_FAILURE,
+        payload: errorMessage,
+      });
+      
+      // Re-throw with status for component to handle
+      const errorToThrow = new Error(errorMessage);
+      errorToThrow.response = error.response;
+      throw errorToThrow;
+    }
+  }, []);
+
   
   const register = useCallback(async (userData) => {
     try {
@@ -246,6 +299,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => ({
     ...state,           // Spread current state
     login,              // Authentication methods
+    adminLogin,         // Enhanced admin login
     register,
     logout,
     updateProfile,
@@ -255,7 +309,7 @@ export const AuthProvider = ({ children }) => {
     hasAnyRole,
     isAdmin,
     isStudent,
-  }), [state, login, register, logout, updateProfile, changePassword, clearError, hasRole, hasAnyRole, isAdmin, isStudent]);
+  }), [state, login, adminLogin, register, logout, updateProfile, changePassword, clearError, hasRole, hasAnyRole, isAdmin, isStudent]);
 
 
   return (

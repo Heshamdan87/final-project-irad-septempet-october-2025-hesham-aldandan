@@ -4,6 +4,23 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 
+// Syrian Cities List
+const SYRIAN_CITIES = [
+  'Damascus',
+  'Aleppo',
+  'Homs',
+  'Hama',
+  'Latakia',
+  'Tartus',
+  'Idlib',
+  'Daraa',
+  'Deir ez-Zor',
+  'Al-Hasakah',
+  'Raqqa',
+  'Quneitra',
+  'As-Suwayda'
+];
+
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
@@ -21,9 +38,10 @@ const RegisterPage = () => {
     academicYear: '',
     studentId: '',
     phone: '',
-    address: '',
+    city: '',
     dateOfBirth: '',
     gender: '',
+    gpa: '',
     grades: [],
 
     adminLevel: '',
@@ -263,7 +281,20 @@ const RegisterPage = () => {
 
     try {
 
-      const { confirmPassword, ...userData } = formData;
+      const { confirmPassword, city, ...userData } = formData;
+      
+      // Add city to address object
+      if (city) {
+        userData.address = {
+          city: city
+        };
+      }
+      
+      // Parse GPA as float if provided
+      if (userData.gpa) {
+        userData.gpa = parseFloat(userData.gpa);
+      }
+      
       const result = await register(userData);
       if (result.success) {
         toast.success('Registration successful! Welcome to Syriana.');
@@ -866,16 +897,38 @@ const RegisterPage = () => {
               </div>
 
               <div>
-                <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Address
+                <label htmlFor="city" className="block text-sm font-semibold text-gray-700 mb-2">
+                  City *
+                </label>
+                <select
+                  id="city"
+                  name="city"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select City</option>
+                  {SYRIAN_CITIES.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="gpa" className="block text-sm font-semibold text-gray-700 mb-2">
+                  GPA (CGPA)
                 </label>
                 <input
-                  id="address"
-                  name="address"
-                  type="text"
+                  id="gpa"
+                  name="gpa"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="4.0"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Your address"
-                  value={formData.address}
+                  placeholder="Enter GPA (0.00 - 4.00)"
+                  value={formData.gpa}
                   onChange={handleChange}
                 />
               </div>

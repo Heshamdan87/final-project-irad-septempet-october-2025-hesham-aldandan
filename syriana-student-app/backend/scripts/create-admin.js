@@ -6,7 +6,7 @@ require('dotenv').config();
 const createAdmin = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/syriana_student_app');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/Syrian Students Registration System ');
     console.log('Connected to MongoDB');
 
     // Check if admin already exists
@@ -25,14 +25,8 @@ const createAdmin = async () => {
       role: 'admin'
     };
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(adminData.password, salt);
-
-    const admin = await User.create({
-      ...adminData,
-      password: hashedPassword
-    });
+    // Don't manually hash - the User model's pre-save hook will handle hashing
+    const admin = await User.create(adminData);
 
     console.log('Admin user created successfully!');
     console.log('Email:', admin.email);

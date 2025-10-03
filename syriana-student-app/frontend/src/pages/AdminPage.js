@@ -4,6 +4,23 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
+// Syrian Cities List
+const SYRIAN_CITIES = [
+  'Damascus',
+  'Aleppo',
+  'Homs',
+  'Hama',
+  'Latakia',
+  'Tartus',
+  'Idlib',
+  'Daraa',
+  'Deir ez-Zor',
+  'Al-Hasakah',
+  'Raqqa',
+  'Quneitra',
+  'As-Suwayda'
+];
+
 const AdminPage = () => {
   const { logout } = useAuth();
   const [students, setStudents] = useState([]);
@@ -11,6 +28,7 @@ const AdminPage = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [showRegisterForm, setShowRegisterForm] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [selectedCities, setSelectedCities] = useState([]);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -32,6 +50,8 @@ const AdminPage = () => {
     major: '',
     department: '',
     academicYear: '',
+    city: '',
+    gpa: '',
     password: '',
     confirmPassword: '',
     role: 'student'
@@ -113,7 +133,11 @@ const AdminPage = () => {
         studentId: registerFormData.studentId,
         major: registerFormData.major,
         department: registerFormData.department,
-        academicYear: registerFormData.academicYear
+        academicYear: registerFormData.academicYear,
+        gpa: registerFormData.gpa ? parseFloat(registerFormData.gpa) : undefined,
+        address: {
+          city: registerFormData.city
+        }
       };
 
       await api.post('/auth/register', registrationData);
@@ -127,6 +151,8 @@ const AdminPage = () => {
         major: '',
         department: '',
         academicYear: '',
+        city: '',
+        gpa: '',
         password: '',
         confirmPassword: '',
         role: 'student'
@@ -158,56 +184,167 @@ const AdminPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header */}
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-sm text-gray-500">Manage students and system</p>
+              </div>
+            </div>
             <button
               onClick={logout}
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
             >
-              Logout
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <div className="mb-6">
-            <nav className="flex space-x-4">
-              <Link
-                to="/admin"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-medium"
-              >
-                Students Management
-              </Link>
-              <Link
-                to="/students"
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm font-medium"
-              >
-                View All Students
-              </Link>
-              <Link
-                to="/courses"
-                className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-sm font-medium"
-              >
-                View Courses
-              </Link>
-            </nav>
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Students</p>
+                <p className="text-3xl font-bold text-gray-900">{students.length}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
           </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Students</p>
+                <p className="text-3xl font-bold text-gray-900">{students.filter(s => s.role === 'student').length}</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">System Status</p>
+                <p className="text-xl font-bold text-green-600">Operational</p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <nav className="flex space-x-2">
+            <Link
+              to="/admin"
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 text-sm font-medium text-center transition-all"
+            >
+              <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Students Management
+            </Link>
+            <Link
+              to="/students"
+              className="flex-1 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 text-sm font-medium text-center transition-all"
+            >
+              <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              View All Students
+            </Link>
+            <Link
+              to="/courses"
+              className="flex-1 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 text-sm font-medium text-center transition-all"
+            >
+              <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              Courses
+            </Link>
+          </nav>
+        </div>
+
+        <div className="bg-white shadow-md rounded-lg p-6">
 
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Manage Students</h2>
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                <svg className="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Manage Students
+              </h2>
               <button
                 onClick={() => setShowRegisterForm(!showRegisterForm)}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 flex items-center"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-2.5 rounded-lg hover:from-green-700 hover:to-emerald-700 flex items-center font-medium shadow-md transition-all"
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 {showRegisterForm ? 'Cancel Registration' : 'Register New Student'}
               </button>
             </div>
+
+            {/* City Filter */}
+            <div className="mb-4 bg-gray-50 p-4 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Filter by City</label>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                {SYRIAN_CITIES.map(city => (
+                  <label key={city} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-4 w-4 text-blue-600 rounded"
+                      checked={selectedCities.includes(city)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedCities([...selectedCities, city]);
+                        } else {
+                          setSelectedCities(selectedCities.filter(c => c !== city));
+                        }
+                      }}
+                    />
+                    <span className="ml-2 text-sm text-gray-700">{city}</span>
+                  </label>
+                ))}
+              </div>
+              {selectedCities.length > 0 && (
+                <button
+                  onClick={() => setSelectedCities([])}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -222,10 +359,16 @@ const AdminPage = () => {
                       Student ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      City
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Major
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Academic Year
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      GPA
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -233,15 +376,34 @@ const AdminPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {students.map((student) => (
+                  {students
+                    .filter(student => 
+                      selectedCities.length === 0 || 
+                      selectedCities.includes(student.address?.city)
+                    )
+                    .map((student) => (
                     <tr key={student._id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {student.firstName} {student.lastName}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{student.studentId || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {student.address?.city || 'N/A'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">{student.major || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{student.academicYear || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          student.gpa >= 3.5 ? 'bg-green-100 text-green-800' :
+                          student.gpa >= 2.5 ? 'bg-yellow-100 text-yellow-800' :
+                          student.gpa ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {student.gpa ? student.gpa.toFixed(2) : 'N/A'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleEdit(student)}
@@ -355,6 +517,33 @@ const AdminPage = () => {
                       <option value="Senior">Senior</option>
                       <option value="Graduate">Graduate</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">City *</label>
+                    <select
+                      value={registerFormData.city}
+                      onChange={(e) => setRegisterFormData({...registerFormData, city: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                      required
+                    >
+                      <option value="">Select City</option>
+                      {SYRIAN_CITIES.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">GPA (CGPA)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="4.0"
+                      value={registerFormData.gpa}
+                      onChange={(e) => setRegisterFormData({...registerFormData, gpa: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+                      placeholder="0.00 - 4.00"
+                    />
                   </div>
                 </div>
 

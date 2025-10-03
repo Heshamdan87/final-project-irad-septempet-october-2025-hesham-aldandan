@@ -44,6 +44,7 @@ api.interceptors.response.use(
 // Authentication service - handles user login, registration, and profile management
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
+  adminLogin: (credentials) => api.post('/auth/admin/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),

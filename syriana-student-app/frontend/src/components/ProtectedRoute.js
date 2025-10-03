@@ -14,15 +14,15 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   }
 
   if (!isAuthenticated) {
+    // Redirect to login page
     return <Navigate to="/student-login" replace />;
   }
 
-  if (user?.role === 'admin') {
-    return children;
-  }
-  
+  // Check role-based access
   if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/student-login" replace />;
+    // Redirect admin to admin page and students to student page
+    const redirectPath = user?.role === 'admin' ? '/admin' : '/student';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return children;

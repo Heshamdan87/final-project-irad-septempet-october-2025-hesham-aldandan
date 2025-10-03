@@ -43,6 +43,49 @@ const userSchema = new mongoose.Schema({
     sparse: true, // Only enforce uniqueness if field is not null
     match: [/^STU\d{6}$/, 'Student ID must be in format STU123456']
   },
+  // Enhanced security fields
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date
+  },
+  lastLogin: {
+    type: Date
+  },
+  lastLoginIP: {
+    type: String
+  },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorSecret: {
+    type: String,
+    select: false
+  },
+  sessionTokens: [{
+    token: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
+    expiresAt: Date,
+    ipAddress: String,
+    userAgent: String
+  }],
+  securityLog: [{
+    action: String,
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    ipAddress: String,
+    userAgent: String,
+    success: Boolean,
+    details: String
+  }],
   phone: {
     type: String,
     match: [/^\+?[\d\s\-\(\)]+$/, 'Please provide a valid phone number']
@@ -113,6 +156,20 @@ const userSchema = new mongoose.Schema({
   },
   lastLogin: {
     type: Date
+  },
+  lastLoginIP: {
+    type: String
+  },
+  loginAttempts: {
+    type: Number,
+    default: 0
+  },
+  lockUntil: {
+    type: Date
+  },
+  mustChangePassword: {
+    type: Boolean,
+    default: false
   },
   passwordResetToken: String,
   passwordResetExpires: Date,
@@ -199,6 +256,124 @@ userSchema.methods.getResetPasswordToken = function() {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   
   return resetToken;
+};
+
+// Enhanced security methods
+userSchema.virtual('isLocked').get(function() {
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+});
+
+userSchema.methods.incLoginAttempts = function() {
+  // If we have a previous lock that has expired, restart at 1
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.updateOne({
+      $unset: {
+        lockUntil: 1,
+      },
+      $set: {
+        loginAttempts: 1,
+      }
+    });
+  }
+  
+  const updates = { $inc: { loginAttempts: 1 } };
+  
+  // Check if we need to lock the account
+  // Lock after 5 failed attempts
+  if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+    // Lock for 2 hours initially, then exponentially increase
+    const lockTime = Math.pow(2, Math.min(this.loginAttempts - 4, 5)) * 60 * 60 * 1000; // Max 32 hours
+    updates.$set = { lockUntil: Date.now() + lockTime };
+  }
+  
+  return this.updateOne(updates);
+};
+
+userSchema.methods.resetLoginAttempts = function() {
+  return this.updateOne({
+    $unset: {
+      loginAttempts: 1,
+      lockUntil: 1
+    }
+  });
+};
+
+userSchema.methods.addSecurityLog = function(action, ipAddress, userAgent, success, details) {
+  this.securityLog.push({
+    action,
+    ipAddress,
+    userAgent,
+    success,
+    details
+  });
+  
+  // Keep only last 50 security log entries
+  if (this.securityLog.length > 50) {
+    this.securityLog = this.securityLog.slice(-50);
+  }
+  
+  return this.save();
+};
+
+userSchema.methods.addSessionToken = function(token, ipAddress, userAgent) {
+  const expiresAt = new Date(Date.now() + (7 * 24 * 60 * 60 * 1000)); // 7 days
+  
+  this.sessionTokens.push({
+    token,
+    ipAddress,
+    userAgent,
+    expiresAt
+  });
+  
+  // Remove expired tokens and keep only last 5 active sessions
+  this.sessionTokens = this.sessionTokens
+    .filter(session => session.expiresAt > new Date())
+    .slice(-5);
+  
+  return this.save();
+};
+
+userSchema.methods.removeSessionToken = function(token) {
+  this.sessionTokens = this.sessionTokens.filter(session => session.token !== token);
+  return this.save();
+};
+
+// Account locking methods for enhanced security
+userSchema.methods.incLoginAttempts = function() {
+  // If we have a previous lock that has expired, restart at 1
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.updateOne({
+      $set: {
+        loginAttempts: 1
+      },
+      $unset: {
+        lockUntil: 1
+      }
+    });
+  }
+  
+  const updates = { $inc: { loginAttempts: 1 } };
+  
+  // Lock account after 5 failed attempts
+  if (this.loginAttempts + 1 >= 5 && !this.lockUntil) {
+    // Lock for progressively longer periods: 15min, 30min, 1hr, 2hr, 24hr
+    const lockTimes = [15, 30, 60, 120, 1440]; // minutes
+    const lockIndex = Math.min(Math.floor((this.loginAttempts || 0) / 5), lockTimes.length - 1);
+    const lockDuration = lockTimes[lockIndex] * 60 * 1000; // convert to milliseconds
+    
+    updates.$set = { lockUntil: Date.now() + lockDuration };
+  }
+  
+  return this.updateOne(updates);
+};
+
+userSchema.methods.resetLoginAttempts = function() {
+  return this.updateOne({
+    $unset: {
+      loginAttempts: 1,
+      lockUntil: 1
+    }
+  });
 };
 
 module.exports = mongoose.model('User', userSchema);

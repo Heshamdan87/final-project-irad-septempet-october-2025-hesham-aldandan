@@ -9,7 +9,9 @@ const {
   changePassword,
   forgotPassword,
   resetPassword,
-  verifyEmail
+  verifyEmail,
+  adminLogin,
+  requireAdmin
 } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
 const { validateRequest } = require('../middleware/validation');
@@ -98,9 +100,23 @@ const resetPasswordValidation = [
     .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
 ];
 
+const adminLoginValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid admin email'),
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
+];
 
+
+// Public routes
 router.post('/register', registerValidation, validateRequest, register);
 router.post('/login', loginValidation, validateRequest, login);
+router.post('/admin/login', adminLoginValidation, validateRequest, adminLogin);
 router.post('/forgot-password', forgotPasswordValidation, validateRequest, forgotPassword);
 router.put('/reset-password/:resetToken', resetPasswordValidation, validateRequest, resetPassword);
 router.get('/verify-email/:token', verifyEmail);
