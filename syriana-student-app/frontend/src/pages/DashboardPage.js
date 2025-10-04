@@ -149,18 +149,56 @@ const DashboardPage = () => {
     });
   };
 
+  // Get courses from user's grades data
+  const recentCourses = user?.grades?.map(grade => ({
+    name: grade.subject,
+    grade: grade.grade,
+    semester: grade.semester,
+    year: grade.year,
+    credits: grade.credits
+  })) || [];
+
+  // Calculate GPA from grades
+  const calculateGPA = () => {
+    if (!user?.grades || user.grades.length === 0) {
+      return 0;
+    }
+    
+    const gradePoints = {
+      'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+      'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+      'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+      'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+      'F': 0.0
+    };
+    
+    let totalPoints = 0;
+    let totalCredits = 0;
+    
+    user.grades.forEach(grade => {
+      const points = gradePoints[grade.grade] || 0;
+      const credits = parseFloat(grade.credits) || 0;
+      totalPoints += points * credits;
+      totalCredits += credits;
+    });
+    
+    return totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : 0;
+  };
+
+  const currentGPA = calculateGPA();
+
 
   const stats = [
     {
       title: 'Enrolled Courses',
-      value: '6',
+      value: recentCourses.length.toString(),
       icon: BookOpen,
       color: 'text-blue-600',
       bg: 'bg-blue-100'
     },
     {
       title: 'Current GPA',
-      value: '3.8',
+      value: currentGPA > 0 ? currentGPA.toString() : 'N/A',
       icon: TrendingUp,
       color: 'text-green-600',
       bg: 'bg-green-100'
@@ -178,31 +216,6 @@ const DashboardPage = () => {
       icon: Clock,
       color: 'text-purple-600',
       bg: 'bg-purple-100'
-    }
-  ];
-
-
-  const recentCourses = [
-    {
-      name: 'Mathematics 101',
-      instructor: 'Dr. Smith',
-      nextClass: 'Tomorrow at 10:00 AM',
-      progress: 85,
-      grade: 'A-'
-    },
-    {
-      name: 'Computer Science Fundamentals',
-      instructor: 'Prof. Johnson',
-      nextClass: 'Today at 2:00 PM',
-      progress: 92,
-      grade: 'A'
-    },
-    {
-      name: 'English Literature',
-      instructor: 'Dr. Williams',
-      nextClass: 'Wednesday at 11:00 AM',
-      progress: 78,
-      grade: 'B+'
     }
   ];
 
@@ -401,30 +414,36 @@ const DashboardPage = () => {
                 </Link>
               </div>
               <div className="space-y-4">
-                {recentCourses.map((course, index) => (
-                  <div key={index} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="bg-blue-100 rounded-full p-3 mr-4">
-                      <BookOpen className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-medium text-gray-900">{course.name}</h3>
-                        <span className="text-sm font-semibold text-green-600">{course.grade}</span>
+                {recentCourses.length > 0 ? (
+                  recentCourses.map((course, index) => (
+                    <div key={index} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="bg-blue-100 rounded-full p-3 mr-4">
+                        <BookOpen className="h-5 w-5 text-blue-600" />
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">{course.instructor}</p>
-                      <p className="text-xs text-gray-400">Next class: {course.nextClass}</p>
-                    </div>
-                    <div className="text-right ml-4">
-                      <p className="text-sm font-medium text-gray-900">{course.progress}%</p>
-                      <div className="w-16 bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full transition-all" 
-                          style={{ width: `${course.progress}%` }}
-                        ></div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-medium text-gray-900">{course.name}</h3>
+                          <span className={`text-sm font-semibold ${
+                            ['A+', 'A', 'A-'].includes(course.grade) ? 'text-green-600' :
+                            ['B+', 'B', 'B-'].includes(course.grade) ? 'text-blue-600' :
+                            ['C+', 'C', 'C-'].includes(course.grade) ? 'text-yellow-600' :
+                            'text-red-600'
+                          }`}>
+                            {course.grade}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-1">{course.semester} {course.year}</p>
+                        <p className="text-xs text-gray-400">{course.credits} Credits</p>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                    <p className="text-sm">No courses registered yet</p>
+                    <p className="text-xs mt-1">Your courses will appear here once registered</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -454,6 +473,21 @@ const DashboardPage = () => {
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Semester</p>
                     <p className="text-sm font-medium text-gray-900">Fall 2024</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Current GPA</p>
+                    <p className={`text-sm font-medium ${
+                      currentGPA >= 3.5 ? 'text-green-600' :
+                      currentGPA >= 2.5 ? 'text-blue-600' :
+                      currentGPA >= 2.0 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {currentGPA > 0 ? currentGPA : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide">Total Courses</p>
+                    <p className="text-sm font-medium text-gray-900">{recentCourses.length}</p>
                   </div>
                 </div>
               </div>

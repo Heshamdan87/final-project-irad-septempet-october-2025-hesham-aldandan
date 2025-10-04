@@ -49,6 +49,12 @@ exports.register = async (req, res) => {
       });
     }
 
+    // If password is not provided (admin creating student), generate default password
+    if (!userData.password) {
+      // Generate default password: studentId or email prefix + "123456"
+      userData.password = userData.studentId ? `${userData.studentId}123` : 'Student123456';
+    }
+
     const user = await User.create({
       ...userData,
       role: 'student'
