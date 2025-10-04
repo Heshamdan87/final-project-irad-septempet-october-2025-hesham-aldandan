@@ -5,17 +5,14 @@ import { Link } from 'react-router-dom';
 import { userService } from '../services/api';
 import toast from 'react-hot-toast';
 
-// Main dashboard component - handles both admin and student views
 const DashboardPage = () => {
   const { user, logout } = useAuth();
 
-  // Admin-specific state for student management
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
 
-  // Form state for adding/editing students
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -28,14 +25,12 @@ const DashboardPage = () => {
     confirmPassword: ''
   });
 
-  // Load students data when admin user is present
   useEffect(() => {
     if (user?.role === 'admin') {
       fetchStudents();
     }
   }, [user]);
 
-  // Fetch all students for admin view
   const fetchStudents = async () => {
     try {
       setLoading(true);
@@ -367,7 +362,7 @@ const DashboardPage = () => {
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           {/* Statistics Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -588,12 +583,18 @@ const DashboardPage = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
-                      <input
-                        type="text"
+                      <select
                         value={formData.academicYear}
                         onChange={(e) => setFormData({...formData, academicYear: e.target.value})}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      />
+                      >
+                        <option value="">Select Academic Year</option>
+                        <option value="Freshman">Freshman</option>
+                        <option value="Sophomore">Sophomore</option>
+                        <option value="Junior">Junior</option>
+                        <option value="Senior">Senior</option>
+                        <option value="Graduate">Graduate</option>
+                      </select>
                     </div>
                     {!editingStudent && (
                       <>

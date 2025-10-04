@@ -128,7 +128,6 @@ const StudentLoginPage = () => {
         {/* Login Form */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address

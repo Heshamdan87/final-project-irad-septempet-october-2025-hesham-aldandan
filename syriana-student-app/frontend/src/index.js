@@ -24,7 +24,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/final-project-irad-septempet-october-2025-hesham-aldandan">
+      <BrowserRouter>
         <AuthProvider>
           <App />
           <Toaster 

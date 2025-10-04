@@ -3,24 +3,24 @@ import { authService } from '../services/api';
 
 
 const initialState = {
-  user: null,                    // Current authenticated user object
-  token: localStorage.getItem('token'), // JWT token from localStorage
-  isAuthenticated: false,        // Boolean indicating if user is logged in
-  isLoading: true,              // Loading state for async operations
-  error: null,                   // Error message for failed operations
+  user: null,
+  token: localStorage.getItem('token'),
+  isAuthenticated: false,
+  isLoading: true,
+  error: null,
 };
 
 
 const AUTH_ACTIONS = {
-  LOGIN_START: 'LOGIN_START',           // Start login process
-  LOGIN_SUCCESS: 'LOGIN_SUCCESS',       // Login completed successfully
-  LOGIN_FAILURE: 'LOGIN_FAILURE',       // Login failed
-  LOGOUT: 'LOGOUT',                     // User logged out
-  LOAD_USER_START: 'LOAD_USER_START',   // Start loading user data
-  LOAD_USER_SUCCESS: 'LOAD_USER_SUCCESS', // User data loaded successfully
-  LOAD_USER_FAILURE: 'LOAD_USER_FAILURE', // Failed to load user data
-  UPDATE_PROFILE: 'UPDATE_PROFILE',     // Profile updated
-  CLEAR_ERROR: 'CLEAR_ERROR',           // Clear error state
+  LOGIN_START: 'LOGIN_START',
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+  LOGIN_FAILURE: 'LOGIN_FAILURE',
+  LOGOUT: 'LOGOUT',
+  LOAD_USER_START: 'LOAD_USER_START',
+  LOAD_USER_SUCCESS: 'LOAD_USER_SUCCESS',
+  LOAD_USER_FAILURE: 'LOAD_USER_FAILURE',
+  UPDATE_PROFILE: 'UPDATE_PROFILE',
+  CLEAR_ERROR: 'CLEAR_ERROR',
 };
 
 
@@ -31,20 +31,20 @@ const authReducer = (state, action) => {
     case AUTH_ACTIONS.LOAD_USER_START:
       return {
         ...state,
-        isLoading: true,    // Set loading to true
-        error: null,        // Clear any previous errors
+        isLoading: true,
+        error: null,
       };
 
 
     case AUTH_ACTIONS.LOGIN_SUCCESS:
-      localStorage.setItem('token', action.payload.token); // Persist token
+      localStorage.setItem('token', action.payload.token);
       return {
         ...state,
-        user: action.payload.user,        // Store user data
-        token: action.payload.token,      // Store token in state
-        isAuthenticated: true,            // Mark as authenticated
-        isLoading: false,                 // Stop loading
-        error: null,                      // Clear errors
+        user: action.payload.user,
+        token: action.payload.token,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
       };
 
 

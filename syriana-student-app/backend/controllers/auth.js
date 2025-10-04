@@ -2,12 +2,10 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-// Rate limiting store (in production, use Redis or database)
 const loginAttempts = new Map();
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 const MAX_ATTEMPTS_PER_IP = 10;
 
-// Helper function to get client IP
 const getClientIP = (req) => {
   return req.headers['x-forwarded-for'] || 
          req.connection.remoteAddress || 
@@ -15,7 +13,6 @@ const getClientIP = (req) => {
          (req.connection.socket ? req.connection.socket.remoteAddress : null);
 };
 
-// Rate limiting middleware
 const checkRateLimit = (ip) => {
   const now = Date.now();
   const attempts = loginAttempts.get(ip) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW };

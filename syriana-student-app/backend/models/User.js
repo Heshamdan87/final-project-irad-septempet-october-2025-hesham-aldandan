@@ -258,7 +258,6 @@ userSchema.methods.getResetPasswordToken = function() {
   return resetToken;
 };
 
-// Enhanced security methods
 userSchema.virtual('isLocked').get(function() {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
@@ -278,11 +277,8 @@ userSchema.methods.incLoginAttempts = function() {
   
   const updates = { $inc: { loginAttempts: 1 } };
   
-  // Check if we need to lock the account
-  // Lock after 5 failed attempts
   if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
-    // Lock for 2 hours initially, then exponentially increase
-    const lockTime = Math.pow(2, Math.min(this.loginAttempts - 4, 5)) * 60 * 60 * 1000; // Max 32 hours
+    const lockTime = Math.pow(2, Math.min(this.loginAttempts - 4, 5)) * 60 * 60 * 1000;
     updates.$set = { lockUntil: Date.now() + lockTime };
   }
   

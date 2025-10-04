@@ -30,9 +30,9 @@ exports.getGrades = async (req, res) => {
 
 
     const grades = await Grade.find(query)
-      .populate('student', 'firstName lastName studentId email')    // Student details
-      .populate('course', 'courseCode title')                      // Course details
-      .populate('gradedBy', 'firstName lastName')                  // Grader details
+      .populate('student', 'firstName lastName studentId email')
+      .populate('course', 'courseCode title')
+      .populate('gradedBy', 'firstName lastName')
       .limit(limit * 1)                    // Convert limit to number
       .skip((page - 1) * limit)           // Calculate skip for pagination
       .sort({ createdAt: -1 });           // Sort by creation date (newest first)
@@ -257,8 +257,8 @@ exports.getCourseGrades = async (req, res) => {
 
 
     const grades = await Grade.find({ course: courseId })
-      .populate('student', 'firstName lastName studentId email')  // Student details
-      .populate('gradedBy', 'firstName lastName')                // Grader details
+      .populate('student', 'firstName lastName studentId email')
+      .populate('gradedBy', 'firstName lastName')
       .sort({ createdAt: -1 });                                  // Sort by creation date
 
 
@@ -280,7 +280,7 @@ exports.getMyGrades = async (req, res) => {
   try {
 
     const grades = await Grade.find({ student: req.user._id })
-      .populate('course', 'courseCode title credits department')  // Course details
+      .populate('course', 'courseCode title credits department')
       .populate('gradedBy', 'firstName lastName')                // Grader information
       .sort({ year: -1, semester: -1 });                         // Sort by academic period
 

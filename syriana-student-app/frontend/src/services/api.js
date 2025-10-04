@@ -1,6 +1,5 @@
-import axios from 'axios';
+import axios from 'react';
 
-// Create axios instance with default configuration
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
   timeout: 10000,
@@ -9,7 +8,6 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - automatically add auth token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -23,12 +21,10 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle common errors and token expiration
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid - clear storage and redirect to login
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
@@ -41,7 +37,6 @@ api.interceptors.response.use(
   }
 );
 
-// Authentication service - handles user login, registration, and profile management
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   adminLogin: (credentials) => api.post('/auth/admin/login', credentials),
@@ -55,7 +50,6 @@ export const authService = {
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
 };
 
-// User management service - CRUD operations for users (admin functionality)
 export const userService = {
   getAllUsers: (params) => api.get('/users', { params }),
   getUserById: (id) => api.get(`/users/${id}`),

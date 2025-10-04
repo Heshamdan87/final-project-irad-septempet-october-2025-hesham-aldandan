@@ -37,6 +37,7 @@ app.use('/api/', limiter);
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman, mobile apps, curl)
     if (!origin) {
       return callback(null, true);
     }
@@ -52,7 +53,12 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, allow all origins for testing
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
