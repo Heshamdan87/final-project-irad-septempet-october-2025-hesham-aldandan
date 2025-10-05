@@ -7,7 +7,10 @@ const connectDB = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log(`🍃 MongoDB Connected: ${conn.connection.host}`);
+    // Only log in non-test environments
+    if (process.env.NODE_ENV !== 'test') {
+      console.log(`🍃 MongoDB Connected: ${conn.connection.host}`);
+    }
     
 
     mongoose.connection.on('error', (err) => {
@@ -15,7 +18,9 @@ const connectDB = async () => {
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.log('MongoDB disconnected');
+      if (process.env.NODE_ENV !== 'test') {
+        console.log('MongoDB disconnected');
+      }
     });
 
 

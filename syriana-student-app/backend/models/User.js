@@ -1,35 +1,30 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: [true, 'Please provide first name'],
+    required: [true, 'First name is required'],
     trim: true,
-    maxlength: [50, 'First name cannot be more than 50 characters']
+    maxlength: 50
   },
   lastName: {
     type: String,
-    required: [true, 'Please provide last name'],
+    required: [true, 'Last name is required'],
     trim: true,
-    maxlength: [50, 'Last name cannot be more than 50 characters']
+    maxlength: 50
   },
   email: {
     type: String,
-    required: [true, 'Please provide email'],
+    required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email'
-    ]
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
   },
   password: {
     type: String,
-    required: [true, 'Please provide password'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    required: [true, 'Password is required'],
+    minlength: 6,
     select: false
   },
   role: {
@@ -40,59 +35,11 @@ const userSchema = new mongoose.Schema({
   studentId: {
     type: String,
     unique: true,
-    sparse: true, // Only enforce uniqueness if field is not null
-    match: [/^STU\d{6}$/, 'Student ID must be in format STU123456']
+    sparse: true,
+    match: [/^STU\d{6}$/, 'Invalid student ID format']
   },
-  // Enhanced security fields
-  loginAttempts: {
-    type: Number,
-    default: 0
-  },
-  lockUntil: {
-    type: Date
-  },
-  lastLogin: {
-    type: Date
-  },
-  lastLoginIP: {
-    type: String
-  },
-  twoFactorEnabled: {
-    type: Boolean,
-    default: false
-  },
-  twoFactorSecret: {
-    type: String,
-    select: false
-  },
-  sessionTokens: [{
-    token: String,
-    createdAt: {
-      type: Date,
-      default: Date.now
-    },
-    expiresAt: Date,
-    ipAddress: String,
-    userAgent: String
-  }],
-  securityLog: [{
-    action: String,
-    timestamp: {
-      type: Date,
-      default: Date.now
-    },
-    ipAddress: String,
-    userAgent: String,
-    success: Boolean,
-    details: String
-  }],
-  phone: {
-    type: String,
-    match: [/^\+?[\d\s\-\(\)]+$/, 'Please provide a valid phone number']
-  },
-  dateOfBirth: {
-    type: Date
-  },
+  phone: String,
+  dateOfBirth: Date,
   address: {
     street: String,
     city: String,
@@ -100,19 +47,12 @@ const userSchema = new mongoose.Schema({
     zipCode: String,
     country: String
   },
-
   enrollmentDate: {
     type: Date,
     default: Date.now
   },
-  major: {
-    type: String,
-    trim: true
-  },
-  department: {
-    type: String,
-    trim: true
-  },
+  major: String,
+  department: String,
   academicYear: {
     type: String,
     enum: ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate']
@@ -123,24 +63,16 @@ const userSchema = new mongoose.Schema({
     max: 4.0
   },
   grades: [{
-    subject: {
-      type: String,
-      required: true
-    },
+    subject: String,
     grade: {
       type: String,
-      enum: ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F'],
-      required: true
+      enum: ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F']
     },
     semester: {
       type: String,
-      enum: ['Fall', 'Spring', 'Summer'],
-      required: true
+      enum: ['Fall', 'Spring', 'Summer']
     },
-    year: {
-      type: Number,
-      required: true
-    },
+    year: Number,
     credits: {
       type: Number,
       default: 3

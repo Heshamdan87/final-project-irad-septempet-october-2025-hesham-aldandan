@@ -15,32 +15,32 @@ const dashboardRoutes = require('./routes/dashboard');
 
 const errorHandler = require('./middleware/errorHandler');
 const notFound = require('./middleware/notFound');
-
 const connectDB = require('./config/database');
+
 require('dotenv').config();
 
 connectDB();
 
 const app = express();
 
+// Security middleware
 app.use(helmet());
 app.use(mongoSanitize());
 app.use(xss());
 app.use(hpp());
 
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests, please try again later.'
 });
 app.use('/api/', limiter);
 
+// CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman, mobile apps, curl)
-    if (!origin) {
-      return callback(null, true);
-    }
+    if (!origin) return callback(null, true);
 
     const allowedOrigins = [
       'http://localhost:3000',
@@ -50,15 +50,10 @@ const corsOptions = {
       process.env.CLIENT_URL
     ].filter(Boolean);
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
-      // In development, allow all origins for testing
-      if (process.env.NODE_ENV === 'development') {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
@@ -72,29 +67,34 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'Syriana Student App API Server',
+    message: 'Syriana Student App API',
     version: '1.0.0',
     endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      courses: '/api/courses',
-      grades: '/api/grades',
-      dashboard: '/api/dashboard'
+      health: '/api/health',      // Server health check
+      auth: '/api/auth',          // Authentication (login, register)
+      users: '/api/users',        // User management
+      courses: '/api/courses',    // Course management
+      grades: '/api/grades',      // Grade management
+      dashboard: '/api/dashboard' // Analytics & statistics
     }
   });
 });
 
+// 1️⃣2️⃣ SERVE STATIC FILES
+// Serve frontend files and uploaded files
 app.use(express.static(path.join(__dirname, '../frontend/public')));
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/grades', gradeRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// 1️⃣3️⃣ API ROUTES
+// Connect URL paths to their route handlers
+app.use('/api/auth', authRoutes);           // Authentication routes
+app.use('/api/users', userRoutes);          // User routes
+app.use('/api/courses', courseRoutes);      // Course routes
+app.use('/api/grades', gradeRoutes);        // Grade routes
+app.use('/api/dashboard', dashboardRoutes); // Dashboard routes
 
+// 1️⃣4️⃣ HEALTH CHECK ROUTE
+// Used to check if the server is running properly
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -123,14 +123,12 @@ if (require.main === module) {
   });
 
   process.on('unhandledRejection', (err, promise) => {
-    console.log(`Error: ${err.message}`);
-    server.close(() => {
-      process.exit(1);
-    });
+    console.log(`❌ Error: ${err.message}`);
+    server.close(() => process.exit(1));
   });
 
   process.on('uncaughtException', (err) => {
-    console.log(`Error: ${err.message}`);
+    console.log(`❌ Error: ${err.message}`);
     process.exit(1);
   });
 }

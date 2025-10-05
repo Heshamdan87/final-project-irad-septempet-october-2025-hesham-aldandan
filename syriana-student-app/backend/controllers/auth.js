@@ -2,35 +2,6 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const loginAttempts = new Map();
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
-const MAX_ATTEMPTS_PER_IP = 10;
-
-const getClientIP = (req) => {
-  return req.headers['x-forwarded-for'] || 
-         req.connection.remoteAddress || 
-         req.socket.remoteAddress ||
-         (req.connection.socket ? req.connection.socket.remoteAddress : null);
-};
-
-const checkRateLimit = (ip) => {
-  const now = Date.now();
-  const attempts = loginAttempts.get(ip) || { count: 0, resetTime: now + RATE_LIMIT_WINDOW };
-  
-  if (now > attempts.resetTime) {
-    loginAttempts.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return { allowed: true, remaining: MAX_ATTEMPTS_PER_IP - 1 };
-  }
-  
-  if (attempts.count >= MAX_ATTEMPTS_PER_IP) {
-    return { allowed: false, resetTime: attempts.resetTime };
-  }
-  
-  attempts.count++;
-  loginAttempts.set(ip, attempts);
-  return { allowed: true, remaining: MAX_ATTEMPTS_PER_IP - attempts.count };
-};
-
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d'
@@ -49,9 +20,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    // If password is not provided (admin creating student), generate default password
     if (!userData.password) {
-      // Generate default password: studentId or email prefix + "123456"
       userData.password = userData.studentId ? `${userData.studentId}123` : 'Student123456';
     }
 

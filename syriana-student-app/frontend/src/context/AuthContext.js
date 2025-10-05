@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useMemo, useCallback } from 'react';
 import { authService } from '../services/api';
 
-
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
@@ -9,7 +8,6 @@ const initialState = {
   isLoading: true,
   error: null,
 };
-
 
 const AUTH_ACTIONS = {
   LOGIN_START: 'LOGIN_START',
@@ -23,10 +21,8 @@ const AUTH_ACTIONS = {
   CLEAR_ERROR: 'CLEAR_ERROR',
 };
 
-
 const authReducer = (state, action) => {
   switch (action.type) {
-
     case AUTH_ACTIONS.LOGIN_START:
     case AUTH_ACTIONS.LOAD_USER_START:
       return {
@@ -34,7 +30,6 @@ const authReducer = (state, action) => {
         isLoading: true,
         error: null,
       };
-
 
     case AUTH_ACTIONS.LOGIN_SUCCESS:
       localStorage.setItem('token', action.payload.token);
@@ -47,64 +42,56 @@ const authReducer = (state, action) => {
         error: null,
       };
 
-
     case AUTH_ACTIONS.LOAD_USER_SUCCESS:
       return {
         ...state,
-        user: action.payload,             // Store loaded user data
-        isAuthenticated: true,            // Mark as authenticated
-        isLoading: false,                 // Stop loading
-        error: null,                      // Clear errors
+        user: action.payload,
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
       };
-
 
     case AUTH_ACTIONS.LOGIN_FAILURE:
     case AUTH_ACTIONS.LOAD_USER_FAILURE:
-      localStorage.removeItem('token');   // Remove invalid token
+      localStorage.removeItem('token');
       return {
         ...state,
-        user: null,                       // Clear user data
-        token: null,                      // Clear token
-        isAuthenticated: false,           // Mark as not authenticated
-        isLoading: false,                 // Stop loading
-        error: action.payload,            // Store error message
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: action.payload,
       };
-
 
     case AUTH_ACTIONS.LOGOUT:
-      localStorage.removeItem('token');   // Remove token from storage
+      localStorage.removeItem('token');
       return {
         ...state,
-        user: null,                       // Clear user data
-        token: null,                      // Clear token
-        isAuthenticated: false,           // Mark as not authenticated
-        isLoading: false,                 // Stop loading
-        error: null,                      // Clear errors
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
       };
-
 
     case AUTH_ACTIONS.UPDATE_PROFILE:
       return {
         ...state,
-        user: { ...state.user, ...action.payload }, // Merge updated profile data
+        user: { ...state.user, ...action.payload },
       };
-
 
     case AUTH_ACTIONS.CLEAR_ERROR:
       return {
         ...state,
-        error: null,                      // Clear error message
+        error: null,
       };
-
 
     default:
       return state;
   }
 };
 
-
 const AuthContext = createContext();
-
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -114,12 +101,9 @@ export const useAuth = () => {
   return context;
 };
 
-
 export const AuthProvider = ({ children }) => {
-
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('token');
@@ -138,7 +122,6 @@ export const AuthProvider = ({ children }) => {
           });
         }
       } else {
-
         dispatch({
           type: AUTH_ACTIONS.LOAD_USER_FAILURE,
           payload: null,

@@ -9,7 +9,20 @@ const gradeSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: [true, 'Please provide course ID']
+    required: false // Make optional for student-submitted grades
+  },
+  // For student-submitted grades without course in system
+  courseName: {
+    type: String,
+    required: function() {
+      return !this.course; // Required if course ID not provided
+    }
+  },
+  courseCode: {
+    type: String,
+    required: function() {
+      return !this.course; // Required if course ID not provided
+    }
   },
   grade: {
     type: String,
@@ -20,13 +33,13 @@ const gradeSchema = new mongoose.Schema({
   semester: {
     type: String,
     required: [true, 'Please provide semester'],
-    enum: ['Fall', 'Spring', 'Summer']
+    enum: ['Fall', 'Spring', 'Summer', 'Winter']
   },
   year: {
     type: Number,
     required: [true, 'Please provide academic year'],
-    min: [2020, 'Year must be 2020 or later'],
-    max: [2030, 'Year cannot be more than 2030']
+    min: [2000, 'Year must be 2000 or later'],
+    max: [2100, 'Year cannot be more than 2100']
   },
   credits: {
     type: Number,
@@ -51,13 +64,19 @@ const gradeSchema = new mongoose.Schema({
   gradedAt: {
     type: Date,
     default: Date.now
+  },
+  isStudentSubmitted: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
 });
 
 
-gradeSchema.index({ student: 1, course: 1, semester: 1, year: 1 }, { unique: true });
+// Updated index to allow multiple entries
+gradeSchema.index({ student: 1, course: 1, semester: 1, year: 1 });
+gradeSchema.index({ student: 1, courseName: 1, courseCode: 1, semester: 1, year: 1 });
 
 
 gradeSchema.pre('save', function(next) {

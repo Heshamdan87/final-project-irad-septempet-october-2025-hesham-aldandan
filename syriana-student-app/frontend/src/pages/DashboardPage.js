@@ -44,7 +44,6 @@ const DashboardPage = () => {
     }
   };
 
-  // Handle user logout
   const handleLogout = async () => {
     try {
       await logout();
@@ -53,7 +52,6 @@ const DashboardPage = () => {
     }
   };
 
-  // Add new student to the system
   const handleAddStudent = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
@@ -70,7 +68,7 @@ const DashboardPage = () => {
       toast.success('Student added successfully');
       setShowAddForm(false);
       resetForm();
-      fetchStudents(); // Refresh the list
+      fetchStudents();
     } catch (error) {
       console.error('Error adding student:', error);
       toast.error('Failed to add student');
@@ -79,7 +77,6 @@ const DashboardPage = () => {
     }
   };
 
-  // Update existing student information
   const handleEditStudent = async (e) => {
     e.preventDefault();
     try {
@@ -88,7 +85,7 @@ const DashboardPage = () => {
       toast.success('Student updated successfully');
       setEditingStudent(null);
       resetForm();
-      fetchStudents(); // Refresh the list
+      fetchStudents();
     } catch (error) {
       console.error('Error updating student:', error);
       toast.error('Failed to update student');
@@ -96,8 +93,6 @@ const DashboardPage = () => {
       setLoading(false);
     }
   };
-
-  // Delete student from the system
   const handleDeleteStudent = async (studentId) => {
     if (!window.confirm('Are you sure you want to delete this student?')) {
       return;
